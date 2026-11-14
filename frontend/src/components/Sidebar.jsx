@@ -35,12 +35,11 @@ export function Sidebar({ open, onClose, onNewReview }) {
   const pillRef = useRef(null)
   const initialRef = useRef(false)
 
-  const updatePill = (target) => {
+  const updatePill = () => {
     animateSlidingPill({
       containerEl: navRef.current,
       pillEl: pillRef.current,
       activeSelector: '.nav-item.is-active',
-      targetEl: target || null,
       isInitialRef: initialRef,
       isVertical: true,
     })
@@ -50,23 +49,13 @@ export function Sidebar({ open, onClose, onNewReview }) {
     const timer = requestAnimationFrame(() => {
       updatePill()
     })
-    return () => cancelAnimationFrame(timer)
+    const handleResize = () => updatePill()
+    window.addEventListener('resize', handleResize)
+    return () => {
+      cancelAnimationFrame(timer)
+      window.removeEventListener('resize', handleResize)
+    }
   }, [location.pathname])
-
-  const handleNavFocus = (e) => {
-    const navItem = e.target.closest('.nav-item')
-    if (navItem && navRef.current) {
-      updatePill(navItem)
-    }
-  }
-
-  const handleNavBlur = (e) => {
-    if (!navRef.current?.contains(e.relatedTarget)) {
-      requestAnimationFrame(() => {
-        updatePill()
-      })
-    }
-  }
 
   return (
     <aside className={cx('sidebar', open && 'is-open')} aria-label="Primary navigation">
@@ -89,12 +78,7 @@ export function Sidebar({ open, onClose, onNewReview }) {
         </button>
       </div>
 
-      <nav
-        className="sidebar__nav sidebar__nav--animated"
-        ref={navRef}
-        onFocusCapture={handleNavFocus}
-        onBlurCapture={handleNavBlur}
-      >
+      <nav className="sidebar__nav sidebar__nav--animated" ref={navRef}>
         <div className="nav-highlight-pill" ref={pillRef} aria-hidden="true" />
         <p className="sidebar__label">Workspace</p>
         {items.map((item) => {
