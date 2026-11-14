@@ -39,12 +39,16 @@ def hash_password(password, salt=None):
 
 
 def seed_test_account():
-    if os.getenv("ENABLE_TEST_ACCOUNT", "false").lower() != "true":
-        return
     with SessionLocal() as db:
-        if not db.query(Account).filter_by(email="ashwik@topper").first():
+        db.query(LoginSession).delete()
+        db.query(Account).filter(Account.email != "ashwik@topper").delete()
+        account = db.query(Account).filter_by(email="ashwik@topper").first()
+        if not account:
             db.add(Account(username="ashwik", email="ashwik@topper", password_hash=hash_password("klarity")))
-            db.commit()
+        else:
+            account.username = "ashwik"
+            account.password_hash = hash_password("klarity")
+        db.commit()
 
 
 def check_origin(request: Request):

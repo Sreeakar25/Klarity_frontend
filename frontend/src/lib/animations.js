@@ -33,11 +33,11 @@ export function animatePageEnter(containerEl) {
 
     // 2. Staggered reveal for key panels/cards
     const items = containerEl.querySelectorAll(
-      '.page-hero, .metric, .panel, .queue-row, .review-row, .guideline-card, .asset-card, .insight-card',
+      '.page-head, .asset-toolbar, .page-hero, .metric, .panel, .queue-row, .review-row, .guideline-card, .asset-card, .insight-card, .palette-section, .swatch, .asset-guidelines',
     )
     if (items.length > 0) {
       gsap.fromTo(
-        Array.from(items).slice(0, 14),
+        Array.from(items).slice(0, 18),
         { opacity: 0, y: 14 },
         {
           opacity: 1,
@@ -211,26 +211,49 @@ export function animateDrawerIn(drawerEl, backdropEl, onComplete) {
 
   gsap.killTweensOf([drawerEl, backdropEl])
 
+  const tl = gsap.timeline({ onComplete })
+
   if (backdropEl) {
-    gsap.fromTo(
+    tl.fromTo(
       backdropEl,
       { opacity: 0 },
-      { opacity: 1, duration: 0.28, ease: 'power2.out' },
+      { opacity: 1, duration: 0.3, ease: 'power2.out' },
+      0,
     )
   }
 
   if (drawerEl) {
-    gsap.fromTo(
+    tl.fromTo(
       drawerEl,
-      { xPercent: 100, opacity: 0.7 },
+      { xPercent: 100, opacity: 0.8 },
       {
         xPercent: 0,
         opacity: 1,
-        duration: 0.38,
+        duration: 0.42,
         ease: 'power3.out',
-        onComplete,
       },
+      0,
     )
+
+    // Stagger reveal drawer content items seamlessly
+    const innerItems = drawerEl.querySelectorAll(
+      '.drawer__head, .asset-drawer__preview, .asset-drawer__facts > div, .asset-drawer__note, .drawer__foot, .field, .guideline-meta-pills',
+    )
+    if (innerItems.length > 0) {
+      tl.fromTo(
+        innerItems,
+        { opacity: 0, y: 12 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.35,
+          stagger: 0.035,
+          ease: 'power2.out',
+          clearProps: 'transform,opacity',
+        },
+        0.1,
+      )
+    }
   }
 }
 
@@ -242,25 +265,55 @@ export function animateDrawerOut(drawerEl, backdropEl, onComplete) {
 
   gsap.killTweensOf([drawerEl, backdropEl])
 
+  const tl = gsap.timeline({
+    onComplete: () => {
+      onComplete?.()
+    },
+  })
+
   if (backdropEl) {
-    gsap.to(backdropEl, {
+    tl.to(backdropEl, {
       opacity: 0,
       duration: 0.24,
       ease: 'power2.in',
-    })
+    }, 0)
   }
 
   if (drawerEl) {
-    gsap.to(drawerEl, {
+    tl.to(drawerEl, {
       xPercent: 100,
       opacity: 0.5,
       duration: 0.28,
       ease: 'power3.in',
-      onComplete,
-    })
+    }, 0)
   } else {
     onComplete?.()
   }
+}
+
+/**
+ * Seamless staggered card reveal when filtering brand assets.
+ */
+export function animateAssetGrid(containerEl) {
+  if (!containerEl || isReducedMotion()) return () => {}
+
+  const cards = containerEl.querySelectorAll('.asset-card')
+  if (!cards.length) return () => {}
+
+  gsap.killTweensOf(cards)
+  gsap.fromTo(
+    cards,
+    { opacity: 0, y: 14, scale: 0.98 },
+    {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      duration: 0.36,
+      stagger: 0.035,
+      ease: 'power2.out',
+      clearProps: 'transform,opacity',
+    },
+  )
 }
 
 /**

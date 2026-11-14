@@ -187,7 +187,7 @@ export function Drawer({ open, onClose, title, description, children, footer, wi
   const backdropRef = useRef(null)
   const [mounted, setMounted] = useState(open)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (open) {
       setMounted(true)
     } else if (mounted) {
@@ -197,7 +197,7 @@ export function Drawer({ open, onClose, title, description, children, footer, wi
     }
   }, [open])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (mounted && open) {
       animateDrawerIn(panelRef.current, backdropRef.current)
     }

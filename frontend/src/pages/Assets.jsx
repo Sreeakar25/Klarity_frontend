@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import {
   ArrowUpRight,
   Check,
@@ -22,6 +22,7 @@ import {
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { Button, Drawer, EmptyState, Field, Panel, Segmented, Select } from '../components/UI'
+import { animateAssetGrid } from '../lib/animations'
 import { cx } from '../lib/utils'
 
 const STORAGE_KEY = 'klarity_brand_assets_v2'
@@ -372,6 +373,7 @@ export function Assets() {
   const fileInputRef = useRef(null)
   const replaceInputRef = useRef(null)
   const drawerPreviewRef = useRef(null)
+  const gridRef = useRef(null)
 
   // Initialize assets from localStorage or defaults
   const [assetsList, setAssetsList] = useState(() => {
@@ -394,10 +396,22 @@ export function Assets() {
     } catch {}
   }, [assetsList])
 
+  useLayoutEffect(() => {
+    if (gridRef.current) {
+      animateAssetGrid(gridRef.current)
+    }
+  }, [filter])
+
   const visible = useMemo(
     () => assetsList.filter((asset) => filter === 'all' || asset.kind === filter),
     [assetsList, filter],
   )
+
+  useLayoutEffect(() => {
+    if (gridRef.current) {
+      animateAssetGrid(gridRef.current)
+    }
+  }, [filter])
 
   const copy = async (value, label) => {
     try {
@@ -685,7 +699,7 @@ export function Assets() {
 
       {/* Asset Cards Grid */}
       {visible.length ? (
-        <div className="asset-grid">
+        <div ref={gridRef} className="asset-grid">
           {visible.map((asset) => (
             <button
               key={asset.id}
@@ -1012,6 +1026,7 @@ export function Assets() {
                 <div className="asset-dropzone__title">Click or drop to replace asset artwork</div>
                 <div className="asset-dropzone__hint">Will update thumbnail and download file</div>
               </div>
+              </div>
 
               <Field label="Title" htmlFor="edit-title">
                 <input
@@ -1078,7 +1093,7 @@ export function Assets() {
             </form>
           ) : (
             /* View Mode */
-            <div className="asset-drawer">
+            <div key={selected.id} className="asset-drawer asset-drawer--animated">
               <div
                 ref={drawerPreviewRef}
                 className={cx('asset-drawer__preview', selected.kind === 'campaign' && 'is-campaign')}
