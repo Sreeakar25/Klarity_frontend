@@ -105,12 +105,15 @@ export function Topbar({ onMenu, onNewReview, currentPath }) {
           </div>
         </div>
 
-        <div className="topbar__right">
+        <div className="topbar__center">
           <button className="search-trigger" type="button" onClick={() => setPaletteOpen(true)}>
             <Search size={16} />
             <span>Search reviews and guidelines</span>
             <kbd>⌘ K</kbd>
           </button>
+        </div>
+
+        <div className="topbar__right">
 
           <div className="topbar__popover-wrap">
             <IconButton
@@ -193,9 +196,6 @@ export function Topbar({ onMenu, onNewReview, currentPath }) {
             ) : null}
           </div>
 
-          <Button size="sm" icon={Plus} onClick={onNewReview} className="topbar__new">
-            New review
-          </Button>
         </div>
       </header>
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />

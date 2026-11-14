@@ -118,9 +118,6 @@ export function Sidebar({ open, onClose, onNewReview }) {
           <p>Up 1.6 points over the last 30 days</p>
         </NavLink>
 
-        <button className="rail-new" type="button" onClick={onNewReview}>
-          <span>+</span> New review
-        </button>
 
         <div className="rail-foot">
           <span className={cx('connection-dot', connected && 'is-live')} />

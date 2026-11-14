@@ -4,6 +4,7 @@ import {
   ArrowDownRight,
   ArrowRight,
   ArrowUpRight,
+  Calendar,
   Check,
   CircleDot,
   Clock3,
@@ -106,6 +107,15 @@ export function Dashboard({ onNewReview }) {
   const days = period === '7d' ? 7 : period === '14d' ? 14 : 30
   const chartData = trends.slice(-days)
 
+  const todayLabel = useMemo(() => {
+    return new Date().toLocaleDateString('en-GB', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    })
+  }, [])
+
   const queue = useMemo(
     () =>
       submissions
@@ -168,11 +178,8 @@ export function Dashboard({ onNewReview }) {
         </div>
         <div className="page-hero__actions">
           <span className="date-stamp">
-            <Clock3 size={14} /> 13 Nov 2026
+            <Calendar size={14} /> {todayLabel}
           </span>
-          <Button icon={Plus} onClick={onNewReview}>
-            New review
-          </Button>
         </div>
       </section>
 
