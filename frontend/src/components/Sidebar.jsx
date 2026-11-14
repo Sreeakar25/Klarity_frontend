@@ -11,7 +11,7 @@ import {
   Settings,
   Sparkles,
 } from 'lucide-react'
-import { BrandMark, OakMark } from './BrandMark'
+import { BrandMark } from './BrandMark'
 import { AnimatedValue } from './AnimatedValue'
 import { useApp } from '../context/AppContext'
 import { cx } from '../lib/utils'
@@ -125,7 +125,6 @@ export function Sidebar({ open, onClose, onNewReview }) {
         <NavLink to="/insights" className="rail-health" onClick={onClose}>
           <div className="rail-health__head">
             <span>Brand health</span>
-            <OakMark size={16} />
           </div>
           <div className="rail-health__value">
             <AnimatedValue value={Math.round(score)} suffix="/100" />

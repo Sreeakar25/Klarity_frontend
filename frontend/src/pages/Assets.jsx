@@ -14,7 +14,6 @@ import {
   Upload,
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
-import { BrandMark } from '../components/BrandMark'
 import { Button, Drawer, EmptyState, Panel, Segmented } from '../components/UI'
 import { cx } from '../lib/utils'
 
@@ -31,14 +30,14 @@ function LogoPlate({ dark = false }) {
   return (
     <svg viewBox="0 0 320 200" className="asset-svg" role="img" aria-label="Aster & Oak logo lockup">
       <rect width="320" height="200" fill={dark ? '#3B2418' : '#F6F1E6'} />
-      <g transform="translate(24 58)">
-        <path
-          d="M24 0c9.1 0 16.5 8.7 16.5 19.3C40.5 32.7 33 41 24 41S7.5 32.7 7.5 19.3C7.5 8.7 14.9 0 24 0Z"
-          fill="#298EE4"
-        />
-        <path d="M19 10h4.1v21H19V10Zm3.8 9.7 6.6-9.7h5.2l-8.1 10.3 8.8 10.7h-5.4L23 20.6v-.9Z" fill="#F6F1E6" />
-      </g>
-      <text x="76" y="102" fill={dark ? '#F6F1E6' : '#3B2418'} className="asset-svg__wordmark">
+      <text
+        x="160"
+        y="96"
+        textAnchor="middle"
+        dominantBaseline="middle"
+        fill={dark ? '#F6F1E6' : '#3B2418'}
+        className="asset-svg__wordmark"
+      >
         Aster &amp; Oak
       </text>
       <text x="24" y="168" fill={dark ? '#B9C3B4' : '#5F675C'} className="asset-svg__caption">
