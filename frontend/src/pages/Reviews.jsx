@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   ArrowUpRight,
+  Calendar,
   ChevronLeft,
   ChevronRight,
   FileText,
@@ -164,6 +165,14 @@ export function Reviews({ onNewReview }) {
               ]}
               aria-label="Sort reviews"
             />
+            <Button
+              variant="outline"
+              size="sm"
+              icon={Calendar}
+              onClick={() => navigate('/calendar')}
+            >
+              Calendar view
+            </Button>
           </div>
         </div>
 
