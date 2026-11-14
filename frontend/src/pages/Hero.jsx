@@ -48,11 +48,9 @@ export function Hero() {
           </nav>
 
           <div className="hero-nav__actions">
-            <Link to="/login" className="hero-btn hero-btn--ghost">
-              Sign In
-            </Link>
-            <Link to="/" className="hero-btn hero-btn--primary">
-              <span>Open Workspace</span>
+            <Link to="/login" className="hero-btn hero-btn--primary">
+              <Lock size={14} />
+              <span>Enterprise Sign In</span>
               <ArrowRight size={15} />
             </Link>
           </div>
@@ -63,12 +61,6 @@ export function Hero() {
       <section className="hero-masthead">
         <div className="hero-masthead__glow" aria-hidden="true" />
         <div className="hero-container hero-masthead__content">
-          <div className="hero-tagline">
-            <span className="hero-tagline__pulse" />
-            <Sparkles size={13} />
-            <span>Klarity 2.0 · Professional Brand Intelligence</span>
-          </div>
-
           <h1 className="hero-title">
             Professional Brand Intelligence <br className="hero-title__br" />
             for Modern Enterprises<span className="hero-accent">.</span>
@@ -81,13 +73,10 @@ export function Hero() {
           </p>
 
           <div className="hero-cta-group">
-            <Link to="/" className="hero-btn hero-btn--lg hero-btn--primary">
-              <span>Launch Live Workspace</span>
-              <ArrowRight size={17} />
-            </Link>
-            <Link to="/login" className="hero-btn hero-btn--lg hero-btn--secondary">
-              <Lock size={15} />
+            <Link to="/login" className="hero-btn hero-btn--lg hero-btn--primary">
+              <Lock size={16} />
               <span>Enterprise Sign In</span>
+              <ArrowRight size={17} />
             </Link>
           </div>
 
@@ -385,12 +374,10 @@ export function Hero() {
               or connect with your enterprise team.
             </p>
             <div className="hero-cta-buttons">
-              <Link to="/" className="hero-btn hero-btn--lg hero-btn--primary">
-                <span>Open Live Workspace</span>
+              <Link to="/login" className="hero-btn hero-btn--lg hero-btn--primary">
+                <Lock size={16} />
+                <span>Enterprise Sign In</span>
                 <ArrowRight size={17} />
-              </Link>
-              <Link to="/login" className="hero-btn hero-btn--lg hero-btn--ghost">
-                <span>Sign In to Account</span>
               </Link>
             </div>
           </div>
@@ -406,7 +393,7 @@ export function Hero() {
             <small>© 2026 Klarity Intelligence Inc. All rights reserved.</small>
           </div>
           <div className="hero-footer__links">
-            <Link to="/">Workspace</Link>
+            <Link to="/login">Enterprise Sign In</Link>
             <Link to="/reviews">Reviews</Link>
             <Link to="/guidelines">Guidelines</Link>
             <Link to="/assets">Brand Assets</Link>
