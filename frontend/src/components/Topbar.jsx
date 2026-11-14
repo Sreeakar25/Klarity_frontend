@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
+  ArrowLeft,
   Bell,
   Check,
   ChevronDown,
@@ -99,9 +100,32 @@ export function Topbar({ onMenu, onNewReview, currentPath }) {
             <Menu size={20} />
           </IconButton>
           <div className="crumbs">
-            <span>Workspace</span>
+            {location.pathname !== '/' && (
+              <button
+                type="button"
+                className="crumbs__back"
+                onClick={() => navigate(-1)}
+                title="Go back"
+                aria-label="Go back"
+              >
+                <ArrowLeft size={13} />
+              </button>
+            )}
+            <Link to="/" className="crumbs__link">
+              Workspace
+            </Link>
             <ChevronRight size={13} />
-            <strong>{title}</strong>
+            {currentPath?.startsWith('/reviews/') ? (
+              <>
+                <Link to="/reviews" className="crumbs__link">
+                  Reviews
+                </Link>
+                <ChevronRight size={13} />
+                <strong>Review report</strong>
+              </>
+            ) : (
+              <strong>{title}</strong>
+            )}
           </div>
         </div>
 
