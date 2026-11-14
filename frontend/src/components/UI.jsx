@@ -1,7 +1,14 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { ArrowUpRight, Check, LoaderCircle, X } from 'lucide-react'
 import { categoryLabels, cx, initials, severityMeta, statusMeta } from '../lib/utils'
+import {
+  animateDrawerIn,
+  animateDrawerOut,
+  animateMeterBar,
+  animateSlidingPill,
+  animateToastIn,
+} from '../lib/animations'
 
 export function Button({
   children,
@@ -92,8 +99,26 @@ export function Avatar({ name = '', size = 'md', className = '' }) {
 }
 
 export function Segmented({ options, value, onChange, label }) {
+  const containerRef = useRef(null)
+  const pillRef = useRef(null)
+  const initialRef = useRef(false)
+
+  useLayoutEffect(() => {
+    const timer = requestAnimationFrame(() => {
+      animateSlidingPill({
+        containerEl: containerRef.current,
+        pillEl: pillRef.current,
+        activeSelector: '.segmented__item.is-active',
+        isInitialRef: initialRef,
+        isVertical: false,
+      })
+    })
+    return () => cancelAnimationFrame(timer)
+  }, [value])
+
   return (
-    <div className="segmented" role="group" aria-label={label}>
+    <div ref={containerRef} className="segmented segmented--animated" role="group" aria-label={label}>
+      <div ref={pillRef} className="segmented__pill" aria-hidden="true" />
       {options.map((option) => (
         <button
           key={option.value}
@@ -110,8 +135,26 @@ export function Segmented({ options, value, onChange, label }) {
 }
 
 export function Tabs({ options, value, onChange, label }) {
+  const containerRef = useRef(null)
+  const pillRef = useRef(null)
+  const initialRef = useRef(false)
+
+  useLayoutEffect(() => {
+    const timer = requestAnimationFrame(() => {
+      animateSlidingPill({
+        containerEl: containerRef.current,
+        pillEl: pillRef.current,
+        activeSelector: '.tabs__item.is-active',
+        isInitialRef: initialRef,
+        isVertical: false,
+      })
+    })
+    return () => cancelAnimationFrame(timer)
+  }, [value])
+
   return (
-    <div className="tabs" role="tablist" aria-label={label}>
+    <div ref={containerRef} className="tabs tabs--animated" role="tablist" aria-label={label}>
+      <div ref={pillRef} className="tabs__pill" aria-hidden="true" />
       {options.map((option) => (
         <button
           key={option.value}
@@ -141,11 +184,36 @@ export function Field({ label, hint, error, children, htmlFor }) {
 
 export function Drawer({ open, onClose, title, description, children, footer, width = '540px' }) {
   const panelRef = useRef(null)
+  const backdropRef = useRef(null)
+  const [mounted, setMounted] = useState(open)
 
   useEffect(() => {
-    if (!open) return undefined
+    if (open) {
+      setMounted(true)
+    } else if (mounted) {
+      animateDrawerOut(panelRef.current, backdropRef.current, () => {
+        setMounted(false)
+      })
+    }
+  }, [open])
+
+  useEffect(() => {
+    if (mounted && open) {
+      animateDrawerIn(panelRef.current, backdropRef.current)
+    }
+  }, [mounted, open])
+
+  const requestClose = () => {
+    animateDrawerOut(panelRef.current, backdropRef.current, () => {
+      setMounted(false)
+      onClose()
+    })
+  }
+
+  useEffect(() => {
+    if (!mounted || !open) return undefined
     const onKeyDown = (event) => {
-      if (event.key === 'Escape') onClose()
+      if (event.key === 'Escape') requestClose()
     }
     document.addEventListener('keydown', onKeyDown)
     const previous = document.body.style.overflow
@@ -160,13 +228,13 @@ export function Drawer({ open, onClose, title, description, children, footer, wi
       document.removeEventListener('keydown', onKeyDown)
       document.body.style.overflow = previous
     }
-  }, [open, onClose])
+  }, [mounted, open])
 
-  if (!open) return null
+  if (!mounted) return null
 
   return createPortal(
     <div className="drawer-shell">
-      <button className="drawer-backdrop" aria-label="Close panel" onClick={onClose} />
+      <button ref={backdropRef} className="drawer-backdrop" aria-label="Close panel" onClick={requestClose} />
       <aside
         className="drawer"
         style={{ '--drawer-width': width }}
@@ -180,7 +248,7 @@ export function Drawer({ open, onClose, title, description, children, footer, wi
             <h2 id="drawer-title">{title}</h2>
             {description ? <p>{description}</p> : null}
           </div>
-          <IconButton label="Close panel" onClick={onClose}>
+          <IconButton label="Close panel" onClick={requestClose}>
             <X size={19} />
           </IconButton>
         </header>
@@ -208,9 +276,15 @@ export function EmptyState({ icon: Icon, title, description, action, compact = f
 }
 
 export function Meter({ value, tone = 'good', label }) {
+  const barRef = useRef(null)
+
+  useEffect(() => {
+    animateMeterBar(barRef.current, value)
+  }, [value])
+
   return (
     <div className={cx('meter', `meter--${tone}`)} aria-label={label} role="img">
-      <span style={{ width: `${Math.max(2, Math.min(100, value))}%` }} />
+      <span ref={barRef} style={{ width: `${Math.max(2, Math.min(100, value))}%` }} />
     </div>
   )
 }
@@ -224,19 +298,31 @@ export function InlineLink({ children, className = '', ...props }) {
   )
 }
 
+function ToastItem({ toast, onDismiss }) {
+  const toastRef = useRef(null)
+
+  useEffect(() => {
+    animateToastIn(toastRef.current)
+  }, [])
+
+  return (
+    <div ref={toastRef} className={cx('toast', `toast--${toast.tone}`)}>
+      <span className="toast__icon">
+        {toast.tone === 'good' ? <Check size={14} /> : <span className="toast__dot" />}
+      </span>
+      <p>{toast.message}</p>
+      <button onClick={() => onDismiss(toast.id)} aria-label="Dismiss notification">
+        <X size={14} />
+      </button>
+    </div>
+  )
+}
+
 export function ToastRegion({ toasts, onDismiss }) {
   return createPortal(
     <div className="toast-region" aria-live="polite" aria-atomic="false">
       {toasts.map((toast) => (
-        <div key={toast.id} className={cx('toast', `toast--${toast.tone}`)}>
-          <span className="toast__icon">
-            {toast.tone === 'good' ? <Check size={14} /> : <span className="toast__dot" />}
-          </span>
-          <p>{toast.message}</p>
-          <button onClick={() => onDismiss(toast.id)} aria-label="Dismiss notification">
-            <X size={14} />
-          </button>
-        </div>
+        <ToastItem key={toast.id} toast={toast} onDismiss={onDismiss} />
       ))}
     </div>,
     document.body,

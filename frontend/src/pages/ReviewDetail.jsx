@@ -17,6 +17,8 @@ import {
   X,
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
+import { AnimatedValue } from '../components/AnimatedValue'
+import { animateHorizontalBars } from '../lib/animations'
 import {
   Button,
   CategoryTag,
@@ -112,6 +114,14 @@ export function ReviewDetail() {
   const [busy, setBusy] = useState(null)
   const [error, setError] = useState('')
   const commentRef = useRef(null)
+  const reportPanelRef = useRef(null)
+
+  useEffect(() => {
+    if (report) {
+      const cancel = animateHorizontalBars(reportPanelRef.current)
+      return cancel
+    }
+  }, [report?.overall_score])
 
   if (!submission) {
     return (
@@ -232,7 +242,7 @@ export function ReviewDetail() {
         </Panel>
 
         <div className="report-column">
-          <Panel className="report-panel">
+          <Panel className="report-panel" ref={reportPanelRef}>
             <div className="report-panel__head">
               <div>
                 <h2>Review report</h2>
@@ -251,8 +261,7 @@ export function ReviewDetail() {
               <>
                 <div className="report-score">
                   <div className="report-score__number">
-                    <strong>{Math.round(report.overall_score)}</strong>
-                    <span>/100</span>
+                    <AnimatedValue value={Math.round(report.overall_score)} suffix="/100" />
                   </div>
                   <div className="report-score__bar">
                     <span

@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { cx, formatCount } from '../lib/utils'
+import { animateHeatmapGrid, animateSvgTrendPath, animateVolumeBars } from '../lib/animations'
 
 const smoothPath = (points) => {
   if (points.length < 2) return ''
@@ -22,6 +23,8 @@ export function PulseChart({
   label = 'Content health trend',
 }) {
   const [active, setActive] = useState(null)
+  const lineRef = useRef(null)
+  const areaRef = useRef(null)
   const width = 760
   const padX = 10
   const padTop = 20
@@ -61,6 +64,11 @@ export function PulseChart({
     setActive(index)
   }
 
+  useEffect(() => {
+    const cancel = animateSvgTrendPath(lineRef.current, areaRef.current)
+    return cancel
+  }, [points])
+
   if (!points.length) return null
 
   return (
@@ -97,8 +105,8 @@ export function PulseChart({
         <text x={padX + 6} y={targetY - 7} className="pulse-chart__target-label">
           Target {target}
         </text>
-        <path d={areaPath} className="pulse-chart__area" />
-        <path d={linePath} className="pulse-chart__line" />
+        <path ref={areaRef} d={areaPath} className="pulse-chart__area" />
+        <path ref={lineRef} d={linePath} className="pulse-chart__line" />
         {activePoint ? (
           <>
             <line
@@ -159,9 +167,16 @@ export function PulseChart({
 }
 
 export function VolumeBars({ data = [], height = 160 }) {
+  const containerRef = useRef(null)
+
+  useEffect(() => {
+    const cancel = animateVolumeBars(containerRef.current)
+    return cancel
+  }, [data])
+
   const max = Math.max(1, ...data.map((item) => item.value ?? item.submissions ?? 0))
   return (
-    <div className="volume-bars" style={{ height }}>
+    <div ref={containerRef} className="volume-bars" style={{ height }}>
       {data.map((item, index) => {
         const value = item.value ?? item.submissions ?? 0
         const percent = Math.max(4, (value / max) * 100)
@@ -178,6 +193,13 @@ export function VolumeBars({ data = [], height = 160 }) {
 }
 
 export function Heatmap({ weeks = 6, data = [] }) {
+  const gridRef = useRef(null)
+
+  useEffect(() => {
+    const cancel = animateHeatmapGrid(gridRef.current)
+    return cancel
+  }, [weeks, data])
+
   const cells = Array.from({ length: weeks * 7 }, (_, index) => {
     const point = data[index % Math.max(1, data.length)] || {}
     return point.value ?? ((index * 7 + 3) % 5)
@@ -190,7 +212,7 @@ export function Heatmap({ weeks = 6, data = [] }) {
           <span key={`${day}-${index}`}>{day}</span>
         ))}
       </div>
-      <div className="heatmap__grid" style={{ gridTemplateColumns: `repeat(${weeks}, 1fr)` }}>
+      <div ref={gridRef} className="heatmap__grid" style={{ gridTemplateColumns: `repeat(${weeks}, 1fr)` }}>
         {Array.from({ length: 7 }).map((_, row) =>
           Array.from({ length: weeks }).map((__, column) => {
             const value = cells[column * 7 + row] ?? 0

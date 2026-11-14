@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ArrowDownRight,
@@ -12,7 +12,9 @@ import {
 import { useApp } from '../context/AppContext'
 import { PulseChart, VolumeBars, Heatmap } from '../components/Charts'
 import { Avatar, CategoryTag, Panel, SectionHead, Segmented } from '../components/UI'
+import { AnimatedValue } from '../components/AnimatedValue'
 import { categoryLabels, cx, formatCount } from '../lib/utils'
+import { animateHorizontalBars } from '../lib/animations'
 
 const flaggedTerms = [
   { term: 'seamless', count: 34, change: 8 },
@@ -57,6 +59,17 @@ export function Insights() {
 
   const totalIssues = categories.reduce((sum, item) => sum + item.total, 0)
   const maxTerm = Math.max(...flaggedTerms.map((item) => item.count))
+  const termListRef = useRef(null)
+  const mixPanelRef = useRef(null)
+
+  useEffect(() => {
+    const cancel1 = animateHorizontalBars(termListRef.current)
+    const cancel2 = animateHorizontalBars(mixPanelRef.current)
+    return () => {
+      cancel1?.()
+      cancel2?.()
+    }
+  }, [])
 
   const weeks = useMemo(() => {
     const result = []
@@ -134,8 +147,7 @@ export function Insights() {
             }
           />
           <div className="insight-chart-score">
-            <strong>{data.stats.avg_score.toFixed(1)}</strong>
-            <span>/100</span>
+            <AnimatedValue value={data.stats.avg_score.toFixed(1)} suffix="/100" />
             <em>
               <ArrowUpRight size={13} /> 1.6 pts
             </em>
@@ -149,7 +161,7 @@ export function Insights() {
             description="Most flagged terms across the last 90 days."
             action={<Flame size={18} className="term-panel__flame" />}
           />
-          <ul className="term-list">
+          <ul className="term-list" ref={termListRef}>
             {flaggedTerms.map((item, index) => (
               <li key={item.term}>
                 <span className="term-list__rank">{String(index + 1).padStart(2, '0')}</span>
@@ -157,7 +169,7 @@ export function Insights() {
                 <span className="term-list__track">
                   <span className="term-list__bar" style={{ width: `${(item.count / maxTerm) * 100}%` }} />
                 </span>
-                <strong>{item.count}</strong>
+                <AnimatedValue value={item.count} duration={600} />
                 <span className={cx('term-list__change', `is-${toneFor(item.change)}`)}>
                   {item.change > 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
                   {Math.abs(item.change)}
@@ -172,7 +184,7 @@ export function Insights() {
       </section>
 
       <section className="insights-row">
-        <Panel className="mix-panel">
+        <Panel className="mix-panel" ref={mixPanelRef}>
           <SectionHead
             title="Where the issues live"
             description={`${formatCount(totalIssues)} findings across ${categories.length} categories.`}
@@ -182,7 +194,7 @@ export function Insights() {
               <div key={item.category} className="mix-row">
                 <div className="mix-row__head">
                   <CategoryTag category={item.category} />
-                  <span>{formatCount(item.total)}</span>
+                  <AnimatedValue value={item.total} duration={600} />
                 </div>
                 <div className="mix-row__bar" role="img" aria-label={`${categoryLabels[item.category]}: ${item.total} issues`}>
                   {item.critical > 0 ? (

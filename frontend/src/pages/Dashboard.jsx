@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ArrowDownRight,
@@ -16,6 +16,8 @@ import {
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { PulseChart } from '../components/Charts'
+import { AnimatedValue } from '../components/AnimatedValue'
+import { animateHorizontalBars } from '../lib/animations'
 import {
   Button,
   CategoryTag,
@@ -55,8 +57,7 @@ function Metric({ label, value, delta, detail, positiveIsGood = true, suffix = '
     <div className="metric">
       <span className="metric__label">{label}</span>
       <div className="metric__value">
-        <strong>{value}</strong>
-        {suffix ? <small>{suffix}</small> : null}
+        <AnimatedValue value={value} suffix={suffix} />
       </div>
       <div className="metric__foot">
         <span className={cx('delta', good ? 'delta--good' : 'delta--warn')}>
@@ -146,6 +147,12 @@ export function Dashboard({ onNewReview }) {
   const maxCategory = Math.max(...categories.map((item) => item.count), 1)
   const totalIssues = categories.reduce((sum, item) => sum + item.count, 0)
   const flaggedTerms = 34
+  const issuesPanelRef = useRef(null)
+
+  useEffect(() => {
+    const cancel = animateHorizontalBars(issuesPanelRef.current)
+    return cancel
+  }, [categories])
 
   return (
     <div className="dashboard">
@@ -227,8 +234,7 @@ export function Dashboard({ onNewReview }) {
           <div className="health-summary">
             <div className="health-score">
               <div>
-                <strong>{stats.avg_score.toFixed(1)}</strong>
-                <span>/100</span>
+                <AnimatedValue value={stats.avg_score.toFixed(1)} suffix="/100" />
               </div>
               <p>
                 <span className={cx('delta', 'delta--good')}>
@@ -240,15 +246,15 @@ export function Dashboard({ onNewReview }) {
             <div className="health-mix">
               <div>
                 <span>Approved</span>
-                <strong>{stats.approval_rate.toFixed(1)}%</strong>
+                <AnimatedValue value={`${stats.approval_rate.toFixed(1)}%`} />
               </div>
               <div>
                 <span>Changes</span>
-                <strong>6.4%</strong>
+                <AnimatedValue value="6.4%" />
               </div>
               <div>
                 <span>Rejected</span>
-                <strong>2.5%</strong>
+                <AnimatedValue value="2.5%" />
               </div>
             </div>
           </div>
@@ -275,7 +281,7 @@ export function Dashboard({ onNewReview }) {
           </div>
           <div className="queue-figure">
             <span className="queue-figure__blob" aria-hidden="true" />
-            <strong>{stats.pending_reviews}</strong>
+            <AnimatedValue value={stats.pending_reviews} />
             <span>
               pieces
               <br />
@@ -296,7 +302,7 @@ export function Dashboard({ onNewReview }) {
       </section>
 
       <section className="dashboard-grid dashboard-grid--split">
-        <Panel className="issues-panel">
+        <Panel className="issues-panel" ref={issuesPanelRef}>
           <SectionHead
             title="Where content slips"
             description={`${formatCount(totalIssues)} issues across ${categories.length} categories.`}

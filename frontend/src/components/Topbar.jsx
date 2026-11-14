@@ -16,6 +16,27 @@ import { useApp } from '../context/AppContext'
 import { Avatar, Button, IconButton } from './UI'
 import { CommandPalette } from './CommandPalette'
 import { actionLabel, cx, timeAgo } from '../lib/utils'
+import { gsap } from 'gsap'
+import { isReducedMotion } from '../lib/animations'
+
+function AnimatedPopover({ className = '', children }) {
+  const popoverRef = useRef(null)
+
+  useEffect(() => {
+    if (isReducedMotion() || !popoverRef.current) return
+    gsap.fromTo(
+      popoverRef.current,
+      { opacity: 0, y: -8, scale: 0.98 },
+      { opacity: 1, y: 0, scale: 1, duration: 0.22, ease: 'power2.out' },
+    )
+  }, [])
+
+  return (
+    <div ref={popoverRef} className={className}>
+      {children}
+    </div>
+  )
+}
 
 const titles = [
   ['/', 'Overview'],
@@ -101,7 +122,7 @@ export function Topbar({ onMenu, onNewReview, currentPath }) {
               <span className="indicator" />
             </IconButton>
             {openMenu === 'notifications' ? (
-              <div className="popover popover--notifications">
+              <AnimatedPopover className="popover popover--notifications">
                 <div className="popover__head">
                   <div>
                     <h3>Notifications</h3>
@@ -133,7 +154,7 @@ export function Topbar({ onMenu, onNewReview, currentPath }) {
                 <button className="popover__footer" onClick={() => { setOpenMenu(null); navigate('/reviews') }}>
                   Open the review queue <ChevronRight size={14} />
                 </button>
-              </div>
+              </AnimatedPopover>
             ) : null}
           </div>
 
@@ -153,7 +174,7 @@ export function Topbar({ onMenu, onNewReview, currentPath }) {
               <ChevronDown size={14} />
             </button>
             {openMenu === 'user' ? (
-              <div className="popover popover--user">
+              <AnimatedPopover className="popover popover--user">
                 <div className="popover__identity">
                   <Avatar name="Kruthik Kamegaonkar" size="lg" />
                   <div>
@@ -168,7 +189,7 @@ export function Topbar({ onMenu, onNewReview, currentPath }) {
                   <span>Aster &amp; Oak</span>
                   <span>Admin</span>
                 </div>
-              </div>
+              </AnimatedPopover>
             ) : null}
           </div>
 

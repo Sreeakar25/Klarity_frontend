@@ -1,4 +1,5 @@
-import { NavLink } from 'react-router-dom'
+import { useLayoutEffect, useRef } from 'react'
+import { NavLink, useLocation } from 'react-router-dom'
 import {
   BookOpen,
   ChartNoAxesCombined,
@@ -10,8 +11,10 @@ import {
   Settings,
 } from 'lucide-react'
 import { BrandMark, OakMark } from './BrandMark'
+import { AnimatedValue } from './AnimatedValue'
 import { useApp } from '../context/AppContext'
 import { cx } from '../lib/utils'
+import { animateSlidingPill } from '../lib/animations'
 
 const items = [
   { to: '/', label: 'Overview', icon: LayoutDashboard },
@@ -23,8 +26,26 @@ const items = [
 
 export function Sidebar({ open, onClose, onNewReview }) {
   const { data, connected, toast } = useApp()
+  const location = useLocation()
   const queue = data?.stats?.pending_reviews ?? 0
   const score = data?.stats?.avg_score ?? 88
+
+  const navRef = useRef(null)
+  const pillRef = useRef(null)
+  const initialRef = useRef(false)
+
+  useLayoutEffect(() => {
+    const timer = requestAnimationFrame(() => {
+      animateSlidingPill({
+        containerEl: navRef.current,
+        pillEl: pillRef.current,
+        activeSelector: '.nav-item.is-active',
+        isInitialRef: initialRef,
+        isVertical: true,
+      })
+    })
+    return () => cancelAnimationFrame(timer)
+  }, [location.pathname])
 
   return (
     <aside className={cx('sidebar', open && 'is-open')} aria-label="Primary navigation">
@@ -47,7 +68,8 @@ export function Sidebar({ open, onClose, onNewReview }) {
         </button>
       </div>
 
-      <nav className="sidebar__nav">
+      <nav className="sidebar__nav sidebar__nav--animated" ref={navRef}>
+        <div className="nav-highlight-pill" ref={pillRef} aria-hidden="true" />
         <p className="sidebar__label">Workspace</p>
         {items.map((item) => {
           const Icon = item.icon
@@ -88,8 +110,7 @@ export function Sidebar({ open, onClose, onNewReview }) {
             <OakMark size={16} />
           </div>
           <div className="rail-health__value">
-            <strong>{Math.round(score)}</strong>
-            <span>/100</span>
+            <AnimatedValue value={Math.round(score)} suffix="/100" />
           </div>
           <div className="rail-health__track">
             <span style={{ width: `${score}%` }} />

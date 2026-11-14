@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowRight, BookOpen, CornerDownLeft, FileClock, Search, Sparkles } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { cx, latestReport, statusMeta } from '../lib/utils'
+import { animatePaletteIn, animatePaletteOut } from '../lib/animations'
 
 const pageRoutes = [
   { label: 'Overview', path: '/', description: 'Brand health, queue, recent reviews' },
@@ -19,23 +20,49 @@ export function CommandPalette({ open, onClose }) {
   const { data } = useApp()
   const [query, setQuery] = useState('')
   const inputRef = useRef(null)
+  const paletteRef = useRef(null)
+  const backdropRef = useRef(null)
+  const [mounted, setMounted] = useState(open)
 
   useEffect(() => {
-    if (!open) return undefined
-    setQuery('')
-    const timer = window.setTimeout(() => inputRef.current?.focus(), 30)
+    if (open) {
+      setMounted(true)
+      setQuery('')
+      const timer = window.setTimeout(() => inputRef.current?.focus(), 40)
+      return () => window.clearTimeout(timer)
+    } else if (mounted) {
+      animatePaletteOut(paletteRef.current, backdropRef.current, () => {
+        setMounted(false)
+      })
+    }
+  }, [open])
+
+  useEffect(() => {
+    if (mounted && open) {
+      animatePaletteIn(paletteRef.current, backdropRef.current)
+    }
+  }, [mounted, open])
+
+  const requestClose = () => {
+    animatePaletteOut(paletteRef.current, backdropRef.current, () => {
+      setMounted(false)
+      onClose()
+    })
+  }
+
+  useEffect(() => {
+    if (!mounted || !open) return undefined
     const onKeyDown = (event) => {
-      if (event.key === 'Escape') onClose()
+      if (event.key === 'Escape') requestClose()
     }
     document.addEventListener('keydown', onKeyDown)
     const previous = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
-      window.clearTimeout(timer)
       document.removeEventListener('keydown', onKeyDown)
       document.body.style.overflow = previous
     }
-  }, [open, onClose])
+  }, [mounted, open])
 
   const results = useMemo(() => {
     const needle = query.trim().toLowerCase()
@@ -64,17 +91,17 @@ export function CommandPalette({ open, onClose }) {
     return [...pages, ...submissions, ...guidelines].slice(0, 12)
   }, [data, query])
 
-  if (!open) return null
+  if (!mounted) return null
 
   const choose = (result) => {
-    onClose()
+    requestClose()
     navigate(result.path)
   }
 
   return createPortal(
     <div className="palette-shell">
-      <button className="palette-backdrop" onClick={onClose} aria-label="Close search" />
-      <div className="palette" role="dialog" aria-modal="true" aria-label="Search Klarity">
+      <button ref={backdropRef} className="palette-backdrop" onClick={requestClose} aria-label="Close search" />
+      <div ref={paletteRef} className="palette" role="dialog" aria-modal="true" aria-label="Search Klarity">
         <div className="palette__input">
           <Search size={19} />
           <input
