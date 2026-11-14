@@ -1557,7 +1557,7 @@ ol {
 }
 
 .rail-new:hover {
-  background: #edf1e7;
+  background: var(--sage-wash);
 }
 
 .rail-new > span {
@@ -2693,9 +2693,8 @@ kbd {
   left: -14px;
   width: 114px;
   height: 114px;
-  background: radial-gradient(circle at 45% 45%, rgba(215, 145, 75, 0.35) 0%, rgba(41, 142, 228, 0.2) 65%, transparent 100%);
+  background: var(--sage, #298ee4);
   border-radius: 54% 46% 51% 49% / 49% 53% 47% 51%;
-  filter: blur(2px);
   transition: border-radius 0.6s ease, transform 0.6s ease;
 }
 
@@ -3320,7 +3319,7 @@ kbd {
 
 .volume-bars__col:hover .volume-bars__bar {
   filter: brightness(1.15);
-  box-shadow: 0 4px 14px rgba(92, 113, 88, 0.45);
+  box-shadow: 0 4px 14px rgba(41, 142, 228, 0.45);
 }
 
 .volume-bars__col:hover .volume-bars__value {
@@ -3341,7 +3340,7 @@ kbd {
   width: 100%;
   max-width: 38px;
   min-height: 5px;
-  background: linear-gradient(180deg, var(--sage), #6d8267);
+  background: linear-gradient(180deg, var(--sage), #1b6cb5);
   border-radius: 6px 6px 3px 3px;
   transform-origin: bottom center;
   transition: height 500ms var(--ease-out), filter 200ms ease, box-shadow 200ms ease;
@@ -3386,22 +3385,28 @@ kbd {
   min-height: 10px;
   border-radius: 3px;
   background: #eee9dc;
+  transition: transform 140ms ease, filter 140ms ease;
+}
+
+.heatmap__cell:hover {
+  transform: scale(1.1);
+  filter: brightness(1.08);
 }
 
 .heatmap__cell--1 {
-  background: #dbe3d4;
+  background: #a5d0f8;
 }
 
 .heatmap__cell--2 {
-  background: #bccdb1;
+  background: #60acf1;
 }
 
 .heatmap__cell--3 {
-  background: #8ea583;
+  background: #298ee4;
 }
 
 .heatmap__cell--4 {
-  background: var(--sage);
+  background: #1862a8;
 }
 
 .heatmap__legend {
