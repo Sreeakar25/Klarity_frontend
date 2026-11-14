@@ -89,9 +89,9 @@ GUIDELINES: list[dict] = [
         "category": GuidelineCategory.visual,
         "priority": 4,
         "content": (
-            "The core palette is Cream #F6F1E6, Ink #1D241F, Sage #5C7158, and Clay #A97A32. "
-            "Sage is the working accent; it should carry action and selection, not decoration. "
-            "Use no more than one accent per composition and keep text at ink or cream for contrast."
+            "The core palette is Cream #F6F1E6, Brown #3B2418, Klarity Blue #298EE4, and Clay #A97A32. "
+            "Klarity Blue is the working accent; it should carry action and selection, not decoration. "
+            "Use no more than one accent per composition and keep text at brown or cream for contrast."
         ),
     },
     {

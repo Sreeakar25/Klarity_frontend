@@ -10,7 +10,7 @@ export function BrandMark({ size = 34, className = '' }) {
     >
       <path
         d="M32 6c14.2 0 25 9.9 25 24.3C57 46.8 44.5 58 32 58S7 46.8 7 30.3C7 15.9 17.8 6 32 6Z"
-        fill="var(--sage, #5C7158)"
+        fill="var(--sage, #298EE4)"
       />
       <path
         d="M23.5 20.5h6.1v23h-6.1v-23Zm5.7 10.6L40.8 20.5h7.5L37.5 35.6l11.4 7.9h-7.8L29.2 32.1v-1Z"

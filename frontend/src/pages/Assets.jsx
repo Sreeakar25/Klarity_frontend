@@ -20,25 +20,25 @@ import { cx } from '../lib/utils'
 
 const swatches = [
   { name: 'Cream', hex: '#F6F1E6' },
-  { name: 'Ink', hex: '#1D241F' },
-  { name: 'Sage', hex: '#5C7158' },
+  { name: 'Brown / Ink', hex: '#3B2418' },
+  { name: 'Klarity Blue', hex: '#298EE4' },
   { name: 'Clay', hex: '#A97A32' },
   { name: 'Paper', hex: '#FBF8F1' },
-  { name: 'Sage wash', hex: '#DDE5D6' },
+  { name: 'Blue wash', hex: '#D7EAFB' },
 ]
 
 function LogoPlate({ dark = false }) {
   return (
     <svg viewBox="0 0 320 200" className="asset-svg" role="img" aria-label="Aster & Oak logo lockup">
-      <rect width="320" height="200" fill={dark ? '#1D241F' : '#F6F1E6'} />
+      <rect width="320" height="200" fill={dark ? '#3B2418' : '#F6F1E6'} />
       <g transform="translate(24 58)">
         <path
           d="M24 0c9.1 0 16.5 8.7 16.5 19.3C40.5 32.7 33 41 24 41S7.5 32.7 7.5 19.3C7.5 8.7 14.9 0 24 0Z"
-          fill="#5C7158"
+          fill="#298EE4"
         />
         <path d="M19 10h4.1v21H19V10Zm3.8 9.7 6.6-9.7h5.2l-8.1 10.3 8.8 10.7h-5.4L23 20.6v-.9Z" fill="#F6F1E6" />
       </g>
-      <text x="76" y="102" fill={dark ? '#F6F1E6' : '#1D241F'} className="asset-svg__wordmark">
+      <text x="76" y="102" fill={dark ? '#F6F1E6' : '#3B2418'} className="asset-svg__wordmark">
         Aster &amp; Oak
       </text>
       <text x="24" y="168" fill={dark ? '#B9C3B4' : '#5F675C'} className="asset-svg__caption">
@@ -52,7 +52,7 @@ function MonogramPlate() {
   return (
     <svg viewBox="0 0 320 200" className="asset-svg" role="img" aria-label="Aster and Oak monogram">
       <rect width="320" height="200" fill="#FBF8F1" />
-      <circle cx="160" cy="88" r="54" fill="#1D241F" />
+      <circle cx="160" cy="88" r="54" fill="#3B2418" />
       <text x="160" y="101" textAnchor="middle" fill="#F6F1E6" className="asset-svg__monogram">
         A&amp;O
       </text>
@@ -73,7 +73,7 @@ function PalettePlate() {
           <text x={20 + index * 71} y="145" fill="#5F675C" className="asset-svg__caption">
             {swatch.name}
           </text>
-          <text x={20 + index * 71} y="160" fill="#1D241F" className="asset-svg__hex">
+          <text x={20 + index * 71} y="160" fill="#3B2418" className="asset-svg__hex">
             {swatch.hex}
           </text>
         </g>
@@ -89,22 +89,22 @@ function TypePlate() {
   return (
     <svg viewBox="0 0 320 200" className="asset-svg" role="img" aria-label="Aster and Oak typography">
       <rect width="320" height="200" fill="#F6F1E6" />
-      <text x="22" y="112" fill="#1D241F" className="asset-svg__aa">
+      <text x="22" y="112" fill="#3B2418" className="asset-svg__aa">
         Aa
       </text>
-      <text x="150" y="58" fill="#1D241F" className="asset-svg__type-name">
+      <text x="150" y="58" fill="#3B2418" className="asset-svg__type-name">
         Bricolage Grotesque
       </text>
       <text x="150" y="78" fill="#5F675C" className="asset-svg__caption">
         DISPLAY · 700 / 800
       </text>
-      <text x="150" y="112" fill="#1D241F" className="asset-svg__type-name asset-svg__type-name--body">
+      <text x="150" y="112" fill="#3B2418" className="asset-svg__type-name asset-svg__type-name--body">
         Manrope
       </text>
       <text x="150" y="132" fill="#5F675C" className="asset-svg__caption">
         UI &amp; BODY · 400–700
       </text>
-      <text x="22" y="176" fill="#1D241F" className="asset-svg__sentence">
+      <text x="22" y="176" fill="#3B2418" className="asset-svg__sentence">
         Fewer pieces. Kept longer.
       </text>
     </svg>
@@ -115,8 +115,8 @@ function CampaignPlate({ variant = 1 }) {
   if (variant === 2) {
     return (
       <svg viewBox="0 0 320 200" className="asset-svg" role="img" aria-label="The washed edge campaign plate">
-        <rect width="320" height="200" fill="#1D241F" />
-        <path d="M206 0h114v200H182c22-31 27-62 22-96-3-24 3-59 2-104Z" fill="#5C7158" opacity=".65" />
+        <rect width="320" height="200" fill="#3B2418" />
+        <path d="M206 0h114v200H182c22-31 27-62 22-96-3-24 3-59 2-104Z" fill="#298EE4" opacity=".65" />
         <path d="M218 0v200M236 0v200M254 0v200M272 0v200" stroke="#F6F1E6" strokeOpacity=".14" />
         <text x="22" y="70" fill="#F6F1E6" className="asset-svg__campaign">
           The washed
@@ -136,9 +136,9 @@ function CampaignPlate({ variant = 1 }) {
         <rect width="320" height="200" fill="#FBF8F1" />
         <path d="M38 172V83c0-28 22-50 50-50h36v139H38Z" fill="#DDE5D6" />
         <path d="M124 172V70h74v102h-74Z" fill="#A97A32" opacity=".84" />
-        <circle cx="240" cy="98" r="46" fill="#5C7158" />
-        <path d="M80 96h52M80 116h34" stroke="#1D241F" strokeWidth="1.4" />
-        <text x="22" y="188" fill="#1D241F" className="asset-svg__campaign asset-svg__campaign--small">
+        <circle cx="240" cy="98" r="46" fill="#298EE4" />
+        <path d="M80 96h52M80 116h34" stroke="#3B2418" strokeWidth="1.4" />
+        <text x="22" y="188" fill="#3B2418" className="asset-svg__campaign asset-svg__campaign--small">
           Oak &amp; linen
         </text>
       </svg>
@@ -149,13 +149,13 @@ function CampaignPlate({ variant = 1 }) {
       <rect width="320" height="200" fill="#F6F1E6" />
       <path
         d="M186 14c40-5 76 14 92 43 17 31 11 69-15 93-27 25-67 31-101 17-34-14-55-44-51-78 3-30 24-56 49-68 9-4 18-6 26-7Z"
-        fill="#5C7158"
+        fill="#298EE4"
       />
-      <path d="M62 58h68M62 72h44M62 86h58" stroke="#1D241F" strokeWidth="1.4" />
-      <text x="22" y="138" fill="#1D241F" className="asset-svg__campaign">
+      <path d="M62 58h68M62 72h44M62 86h58" stroke="#3B2418" strokeWidth="1.4" />
+      <text x="22" y="138" fill="#3B2418" className="asset-svg__campaign">
         A slower
       </text>
-      <text x="22" y="164" fill="#1D241F" className="asset-svg__campaign">
+      <text x="22" y="164" fill="#3B2418" className="asset-svg__campaign">
         morning.
       </text>
       <text x="224" y="178" fill="#F6F1E6" className="asset-svg__caption asset-svg__caption--light">
@@ -168,8 +168,8 @@ function CampaignPlate({ variant = 1 }) {
 function SocialPlate() {
   return (
     <svg viewBox="0 0 240 300" className="asset-svg" role="img" aria-label="Social template">
-      <rect width="240" height="300" fill="#1D241F" />
-      <circle cx="168" cy="100" r="74" fill="#5C7158" />
+      <rect width="240" height="300" fill="#3B2418" />
+      <circle cx="168" cy="100" r="74" fill="#298EE4" />
       <path d="M0 232c48-38 91-48 128-30 32 16 68 19 112 6v92H0v-68Z" fill="#F6F1E6" />
       <text x="22" y="52" fill="#F6F1E6" className="asset-svg__caption asset-svg__caption--light">
         @ASTERANDOAK
@@ -183,7 +183,7 @@ function SocialPlate() {
       <text x="22" y="244" fill="#F6F1E6" className="asset-svg__campaign asset-svg__campaign--social">
         things.
       </text>
-      <text x="22" y="282" fill="#1D241F" className="asset-svg__caption">
+      <text x="22" y="282" fill="#3B2418" className="asset-svg__caption">
         4:5 · STORY TEMPLATE
       </text>
     </svg>
@@ -413,7 +413,7 @@ export function Assets() {
           <button type="button" onClick={() => copy('Bricolage Grotesque / Manrope', 'Type pairing')}>
             <Type size={15} /> Copy type pairing
           </button>
-          <button type="button" onClick={() => copy('#F6F1E6, #1D241F, #5C7158, #A97A32', 'Palette')}>
+          <button type="button" onClick={() => copy('#F6F1E6, #3B2418, #298EE4, #A97A32', 'Palette')}>
             <Palette size={15} /> Copy palette tokens
           </button>
         </div>
