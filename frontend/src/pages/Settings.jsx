@@ -14,7 +14,7 @@ import {
   Workflow,
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
-import { Avatar, Button, Field, Panel, SectionHead } from '../components/UI'
+import { Avatar, Button, Field, Panel, SectionHead, Select } from '../components/UI'
 import { cx } from '../lib/utils'
 
 const STORAGE_KEY = 'klarity.settings.v1'
@@ -141,29 +141,31 @@ export function Settings() {
                   />
                 </Field>
                 <Field label="Timezone" htmlFor="workspace-timezone">
-                  <select
+                  <Select
                     id="workspace-timezone"
                     value={settings.timezone}
-                    onChange={(event) => update('timezone', event.target.value)}
-                  >
-                    <option>Asia/Kolkata (GMT+5:30)</option>
-                    <option>Europe/London (GMT+0)</option>
-                    <option>America/New_York (GMT-5)</option>
-                    <option>Asia/Singapore (GMT+8)</option>
-                  </select>
+                    onChange={(val) => update('timezone', val)}
+                    options={[
+                      'Asia/Kolkata (GMT+5:30)',
+                      'Europe/London (GMT+0)',
+                      'America/New_York (GMT-5)',
+                      'Asia/Singapore (GMT+8)',
+                    ]}
+                  />
                 </Field>
               </div>
               <Field label="Default reviewer" htmlFor="workspace-reviewer" hint="New submissions are routed here first.">
-                <select
+                <Select
                   id="workspace-reviewer"
                   value={settings.defaultReviewer}
-                  onChange={(event) => update('defaultReviewer', event.target.value)}
-                >
-                  <option>Ashwik Saxena</option>
-                  <option>Maya Iyer</option>
-                  <option>Maddi Abhinav</option>
-                  <option>Kruthik Kamegaonkar</option>
-                </select>
+                  onChange={(val) => update('defaultReviewer', val)}
+                  options={[
+                    'Ashwik Saxena',
+                    'Maya Iyer',
+                    'Maddi Abhinav',
+                    'Kruthik Kamegaonkar',
+                  ]}
+                />
               </Field>
             </div>
           </Panel>

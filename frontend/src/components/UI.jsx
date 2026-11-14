@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { ArrowUpRight, Check, LoaderCircle, X } from 'lucide-react'
+import { ArrowUpRight, Check, ChevronDown, LoaderCircle, X } from 'lucide-react'
 import { categoryLabels, cx, initials, severityMeta, statusMeta } from '../lib/utils'
 import {
   animateDrawerIn,
@@ -337,3 +337,97 @@ export function ToastRegion({ toasts, onDismiss }) {
 export function Skeleton({ className = '' }) {
   return <span className={cx('skeleton', className)} aria-hidden="true" />
 }
+
+export function Select({
+  options = [],
+  value,
+  onChange,
+  icon: Icon,
+  placeholder = 'Select option',
+  className = '',
+  id,
+  'aria-label': ariaLabel,
+}) {
+  const [open, setOpen] = useState(false)
+  const containerRef = useRef(null)
+
+  const normalizedOptions = options.map((opt) =>
+    typeof opt === 'object' && opt !== null ? opt : { value: opt, label: String(opt) },
+  )
+
+  const selectedOption = normalizedOptions.find((opt) => opt.value === value)
+  const displayLabel = selectedOption ? selectedOption.label : placeholder
+
+  useEffect(() => {
+    if (!open) return
+
+    const handlePointerDown = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setOpen(false)
+      }
+    }
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setOpen(false)
+      }
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [open])
+
+  const handleSelect = (val) => {
+    onChange?.(val)
+    setOpen(false)
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      className={cx('custom-select', open && 'is-open', className)}
+    >
+      <button
+        type="button"
+        id={id}
+        className="custom-select__trigger"
+        onClick={() => setOpen((prev) => !prev)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={ariaLabel}
+      >
+        <span className="custom-select__left">
+          {Icon ? <Icon size={14} className="custom-select__icon" /> : null}
+          <span className="custom-select__value">{displayLabel}</span>
+        </span>
+        <ChevronDown size={14} className={cx('custom-select__chevron', open && 'is-rotated')} />
+      </button>
+
+      {open && (
+        <div className="custom-select__dropdown" role="listbox">
+          {normalizedOptions.map((opt) => {
+            const isSelected = opt.value === value
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                role="option"
+                aria-selected={isSelected}
+                className={cx('custom-select__option', isSelected && 'is-selected')}
+                onClick={() => handleSelect(opt.value)}
+              >
+                <span>{opt.label}</span>
+                {isSelected ? <Check size={13} className="custom-select__check" /> : null}
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+

@@ -19,6 +19,7 @@ import {
   EmptyState,
   Field,
   Panel,
+  Select,
   Tabs,
 } from '../components/UI'
 import { categoryLabels, cx, formatDate, timeAgo } from '../lib/utils'
@@ -126,29 +127,31 @@ function GuidelineDrawer({ open, onClose, editing }) {
         </Field>
         <div className="form-row form-row--two">
           <Field label="Category" htmlFor="guideline-category">
-            <select
+            <Select
               id="guideline-category"
               value={form.category}
-              onChange={(event) => update('category', event.target.value)}
-            >
-              <option value="tone">Tone</option>
-              <option value="terminology">Terminology</option>
-              <option value="facts">Facts</option>
-              <option value="visual">Visual</option>
-            </select>
+              onChange={(val) => update('category', val)}
+              options={[
+                { value: 'tone', label: 'Tone' },
+                { value: 'terminology', label: 'Terminology' },
+                { value: 'facts', label: 'Facts' },
+                { value: 'visual', label: 'Visual' },
+              ]}
+            />
           </Field>
           <Field label="Priority" htmlFor="guideline-priority" hint={priorityLabels[form.priority]}>
-            <select
+            <Select
               id="guideline-priority"
               value={form.priority}
-              onChange={(event) => update('priority', Number(event.target.value))}
-            >
-              <option value={5}>5 · Critical</option>
-              <option value={4}>4 · High</option>
-              <option value={3}>3 · Standard</option>
-              <option value={2}>2 · Reference</option>
-              <option value={1}>1 · Reference</option>
-            </select>
+              onChange={(val) => update('priority', Number(val))}
+              options={[
+                { value: 5, label: '5 · Critical' },
+                { value: 4, label: '4 · High' },
+                { value: 3, label: '3 · Standard' },
+                { value: 2, label: '2 · Reference' },
+                { value: 1, label: '1 · Reference' },
+              ]}
+            />
           </Field>
         </div>
         <Field

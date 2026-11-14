@@ -18,6 +18,7 @@ import {
   EmptyState,
   Panel,
   ScorePill,
+  Select,
   StatusPill,
   Tabs,
 } from '../components/UI'
@@ -138,33 +139,31 @@ export function Reviews({ onNewReview }) {
                 </button>
               ) : null}
             </label>
-            <label className="select-field">
-              <SlidersHorizontal size={14} />
-              <select
-                value={type}
-                onChange={(event) => {
-                  setType(event.target.value)
-                  setPage(0)
-                }}
-                aria-label="Filter by content type"
-              >
-                <option value="all">All types</option>
-                <option value="text">Copy</option>
-                <option value="html">Pages</option>
-                <option value="image">Visuals</option>
-              </select>
-            </label>
-            <label className="select-field select-field--plain">
-              <select
-                value={sort}
-                onChange={(event) => setSort(event.target.value)}
-                aria-label="Sort reviews"
-              >
-                <option value="newest">Newest first</option>
-                <option value="oldest">Oldest first</option>
-                <option value="score">Highest score</option>
-              </select>
-            </label>
+            <Select
+              icon={SlidersHorizontal}
+              value={type}
+              onChange={(val) => {
+                setType(val)
+                setPage(0)
+              }}
+              options={[
+                { value: 'all', label: 'All types' },
+                { value: 'text', label: 'Copy' },
+                { value: 'html', label: 'Pages' },
+                { value: 'image', label: 'Visuals' },
+              ]}
+              aria-label="Filter by content type"
+            />
+            <Select
+              value={sort}
+              onChange={(val) => setSort(val)}
+              options={[
+                { value: 'newest', label: 'Newest first' },
+                { value: 'oldest', label: 'Oldest first' },
+                { value: 'score', label: 'Highest score' },
+              ]}
+              aria-label="Sort reviews"
+            />
           </div>
         </div>
 
