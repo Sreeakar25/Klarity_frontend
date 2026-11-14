@@ -339,7 +339,6 @@ export function Dashboard({ onNewReview }) {
           <div className="signal-callout">
             <div className="signal-callout__word" aria-hidden="true">
               seamless
-              <span className="signal-callout__blob" />
             </div>
             <div className="signal-callout__copy">
               <span>Language signal</span>

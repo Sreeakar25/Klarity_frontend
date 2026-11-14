@@ -2906,26 +2906,11 @@ kbd {
   font-weight: 700;
   letter-spacing: -0.045em;
   line-height: 1;
+  color: var(--ink);
 }
 
 .signal-callout__blob {
-  position: absolute;
-  inset: 12% -4px -8% -4px;
-  z-index: 0;
-  background: var(--sage-soft);
-  border-radius: 48% 52% 44% 56% / 50% 40% 60% 50%;
-  transform: rotate(-2deg);
-}
-
-.signal-callout__word {
-  z-index: 1;
-}
-
-.signal-callout__word::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
+  display: none;
 }
 
 .signal-callout__copy {
