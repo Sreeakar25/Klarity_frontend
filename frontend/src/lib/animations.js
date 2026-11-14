@@ -388,32 +388,39 @@ export function animateToastIn(toastEl) {
 
 /**
  * Seamless sliding & dropping highlight box for tabs, segmented controls, and sidebar nav.
- * Uses spring physics with squash & stretch for a physical "drop-in" feel.
+ * Calculates coordinates relative to container using untransformed layout geometry (offsetTop/offsetLeft),
+ * so hover transforms, scales, and focus states never distort or misalign the pill.
  */
 export function animateSlidingPill({
   containerEl,
   pillEl,
   activeSelector = '.is-active',
+  targetEl = null,
   isInitialRef,
   isVertical = false,
 }) {
   if (!containerEl || !pillEl || isReducedMotion()) return
 
-  const activeEl = containerEl.querySelector(activeSelector)
+  const activeEl = targetEl || containerEl.querySelector(activeSelector)
   if (!activeEl) {
     gsap.to(pillEl, { opacity: 0, duration: 0.2 })
     return
   }
 
-  const containerRect = containerEl.getBoundingClientRect()
-  const activeRect = activeEl.getBoundingClientRect()
+  // Calculate coordinates relative to container using untransformed layout geometry.
+  // offsetTop / offsetLeft are completely immune to CSS transforms (e.g. hover scale, translateX)
+  let y = 0
+  let x = 0
+  let curr = activeEl
+  while (curr && curr !== containerEl) {
+    y += curr.offsetTop || 0
+    x += curr.offsetLeft || 0
+    curr = curr.offsetParent
+  }
+  const width = activeEl.offsetWidth
+  const height = activeEl.offsetHeight
 
-  const x = activeRect.left - containerRect.left
-  const y = activeRect.top - containerRect.top + containerEl.scrollTop
-  const width = activeRect.width
-  const height = activeRect.height
-
-  if (!isInitialRef.current) {
+  if (isInitialRef && !isInitialRef.current) {
     isInitialRef.current = true
     gsap.set(pillEl, {
       x,
@@ -427,48 +434,35 @@ export function animateSlidingPill({
     gsap.fromTo(
       pillEl,
       {
-        y: isVertical ? y - 18 : y,
-        x: isVertical ? x : x - 10,
-        scaleY: isVertical ? 0.8 : 1,
-        scaleX: isVertical ? 1 : 0.85,
+        y: isVertical ? y - 12 : y,
+        x: isVertical ? x : x - 8,
         opacity: 0,
       },
       {
         y,
         x,
-        scaleY: 1,
-        scaleX: 1,
         opacity: 1,
-        duration: 0.45,
-        ease: 'back.out(2)',
+        duration: 0.35,
+        ease: 'power3.out',
       },
     )
     return
   }
 
-  const currentY = gsap.getProperty(pillEl, 'y') || y
-  const isMovingDown = y > currentY
-
   gsap.killTweensOf(pillEl)
 
   if (isVertical) {
-    // Tactile vertical drop with slight physics squash & stretch
-    const tl = gsap.timeline()
-    tl.to(pillEl, {
+    // Smooth, precise vertical glide without overflowing into adjacent elements
+    gsap.to(pillEl, {
       x,
       y,
       width,
       height,
       opacity: 1,
-      scaleY: isMovingDown ? 1.07 : 0.95,
-      scaleX: isMovingDown ? 0.97 : 1.03,
-      duration: 0.22,
-      ease: 'power2.inOut',
-    }).to(pillEl, {
       scaleX: 1,
       scaleY: 1,
-      duration: 0.26,
-      ease: 'back.out(2.2)', // bouncy drop into place!
+      duration: 0.28,
+      ease: 'power3.out',
     })
   } else {
     // Horizontal fluid glide for tabs and segmented controls
@@ -478,8 +472,10 @@ export function animateSlidingPill({
       width,
       height,
       opacity: 1,
-      duration: 0.36,
-      ease: 'back.out(1.6)',
+      scaleX: 1,
+      scaleY: 1,
+      duration: 0.32,
+      ease: 'power3.out',
     })
   }
 }

@@ -219,10 +219,14 @@ export function Drawer({ open, onClose, title, description, children, footer, wi
     const previous = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     window.setTimeout(() => {
-      const focusable = panelRef.current?.querySelector(
-        'input, textarea, select, button, [href], [tabindex]:not([tabindex="-1"])',
+      const bodyFocusable = panelRef.current?.querySelector(
+        '.drawer__body input, .drawer__body textarea, .drawer__body select, .drawer__body button, .drawer__body [href], .drawer__foot button'
       )
-      focusable?.focus?.()
+      if (bodyFocusable) {
+        bodyFocusable.focus({ preventScroll: true })
+      } else {
+        panelRef.current?.focus?.({ preventScroll: true })
+      }
     }, 20)
     return () => {
       document.removeEventListener('keydown', onKeyDown)
@@ -241,6 +245,7 @@ export function Drawer({ open, onClose, title, description, children, footer, wi
         role="dialog"
         aria-modal="true"
         aria-labelledby="drawer-title"
+        tabIndex={-1}
         ref={panelRef}
       >
         <header className="drawer__head">

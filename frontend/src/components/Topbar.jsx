@@ -7,10 +7,12 @@ import {
   ChevronDown,
   ChevronRight,
   CircleDot,
+  LogOut,
   Menu,
   Plus,
   Search,
   Settings,
+  Sparkles,
   X,
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
@@ -211,6 +213,12 @@ export function Topbar({ onMenu, onNewReview, currentPath }) {
                 </div>
                 <button onClick={() => { setOpenMenu(null); navigate('/settings') }}>
                   <Settings size={15} /> Workspace settings
+                </button>
+                <button onClick={() => { setOpenMenu(null); navigate('/hero') }}>
+                  <Sparkles size={15} /> Product overview
+                </button>
+                <button onClick={() => { setOpenMenu(null); navigate('/login') }}>
+                  <LogOut size={15} /> Sign out
                 </button>
                 <div className="popover__meta">
                   <span>Aster &amp; Oak</span>

@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   LifeBuoy,
   Settings,
+  Sparkles,
 } from 'lucide-react'
 import { BrandMark, OakMark } from './BrandMark'
 import { AnimatedValue } from './AnimatedValue'
@@ -34,18 +35,38 @@ export function Sidebar({ open, onClose, onNewReview }) {
   const pillRef = useRef(null)
   const initialRef = useRef(false)
 
+  const updatePill = (target) => {
+    animateSlidingPill({
+      containerEl: navRef.current,
+      pillEl: pillRef.current,
+      activeSelector: '.nav-item.is-active',
+      targetEl: target || null,
+      isInitialRef: initialRef,
+      isVertical: true,
+    })
+  }
+
   useLayoutEffect(() => {
     const timer = requestAnimationFrame(() => {
-      animateSlidingPill({
-        containerEl: navRef.current,
-        pillEl: pillRef.current,
-        activeSelector: '.nav-item.is-active',
-        isInitialRef: initialRef,
-        isVertical: true,
-      })
+      updatePill()
     })
     return () => cancelAnimationFrame(timer)
   }, [location.pathname])
+
+  const handleNavFocus = (e) => {
+    const navItem = e.target.closest('.nav-item')
+    if (navItem && navRef.current) {
+      updatePill(navItem)
+    }
+  }
+
+  const handleNavBlur = (e) => {
+    if (!navRef.current?.contains(e.relatedTarget)) {
+      requestAnimationFrame(() => {
+        updatePill()
+      })
+    }
+  }
 
   return (
     <aside className={cx('sidebar', open && 'is-open')} aria-label="Primary navigation">
@@ -68,7 +89,12 @@ export function Sidebar({ open, onClose, onNewReview }) {
         </button>
       </div>
 
-      <nav className="sidebar__nav sidebar__nav--animated" ref={navRef}>
+      <nav
+        className="sidebar__nav sidebar__nav--animated"
+        ref={navRef}
+        onFocusCapture={handleNavFocus}
+        onBlurCapture={handleNavBlur}
+      >
         <div className="nav-highlight-pill" ref={pillRef} aria-hidden="true" />
         <p className="sidebar__label">Workspace</p>
         {items.map((item) => {
@@ -96,6 +122,14 @@ export function Sidebar({ open, onClose, onNewReview }) {
         >
           <Settings size={18} strokeWidth={1.8} />
           <span>Settings</span>
+        </NavLink>
+        <NavLink
+          to="/hero"
+          className={({ isActive }) => cx('nav-item', isActive && 'is-active')}
+          onClick={onClose}
+        >
+          <Sparkles size={18} strokeWidth={1.8} />
+          <span>Product overview</span>
         </NavLink>
         <button className="nav-item nav-item--button" type="button" onClick={() => toast('Docs are coming next in this build.', 'info')}>
           <LifeBuoy size={18} strokeWidth={1.8} />

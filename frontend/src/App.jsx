@@ -14,6 +14,8 @@ import { Guidelines } from './pages/Guidelines'
 import { Assets } from './pages/Assets'
 import { Insights } from './pages/Insights'
 import { Settings } from './pages/Settings'
+import { Hero } from './pages/Hero'
+import { Login } from './pages/Login'
 
 function LoadingScreen() {
   const brandRef = useRef(null)
@@ -59,6 +61,21 @@ function AppShell() {
 
   if (loading || !data) return <LoadingScreen />
 
+  const isPublic = location.pathname === '/hero' || location.pathname === '/login'
+
+  if (isPublic) {
+    return (
+      <div className="public-shell">
+        <Routes location={location}>
+          <Route path="/hero" element={<Hero />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="*" element={<Navigate to="/hero" replace />} />
+        </Routes>
+        <ToastRegion toasts={toasts} onDismiss={dismissToast} />
+      </div>
+    )
+  }
+
   return (
     <div className="app-shell">
       <Sidebar
@@ -86,6 +103,8 @@ function AppShell() {
               <Route path="/assets" element={<Assets />} />
               <Route path="/insights" element={<Insights />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/hero" element={<Hero />} />
+              <Route path="/login" element={<Login />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>

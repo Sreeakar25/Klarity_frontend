@@ -35,9 +35,9 @@ const defaultSettings = {
 
 const team = [
   { name: 'Kruthik Kamegaonkar', email: 'kruthik@localhost5000.dev', role: 'Admin', status: 'Active' },
-  { name: 'Ashwik Saxena', email: 'ashwik@localhost5000.dev', role: 'Reviewer', status: 'Active' },
+  { name: 'Ashwik Saxena (Topper)', email: 'ashwik@localhost5000.dev', role: 'Admin', status: 'Active' },
+  { name: 'Maddi Abhinav', email: 'abhinav@localhost5000.dev', role: 'Admin', status: 'Active' },
   { name: 'Maya Iyer', email: 'maya@asterandoak.studio', role: 'Reviewer', status: 'Active' },
-  { name: 'Maddi Abhinav', email: 'abhinav@localhost5000.dev', role: 'Reviewer', status: 'Active' },
   { name: 'G N Sreekar', email: 'sreekar@localhost5000.dev', role: 'Creator', status: 'Active' },
   { name: 'Rohan Mehta', email: 'rohan@asterandoak.studio', role: 'Creator', status: 'Invited' },
 ]
