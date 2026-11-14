@@ -111,4 +111,4 @@ Klarity is an intelligent brand-governance platform that reviews content before 
 
 ## 📄 License
 
-*TBD*
+*Not yet decided*
