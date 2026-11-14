@@ -1,21 +1,30 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   ArrowUpRight,
   Check,
   Copy,
   Download,
+  Edit3,
+  FileCheck2,
+  FileUp,
   Image,
   Images,
   Layers,
   Palette,
   Plus,
+  RotateCcw,
   Sparkles,
+  Trash2,
   Type,
   Upload,
+  UploadCloud,
+  X,
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
-import { Button, Drawer, EmptyState, Panel, Segmented } from '../components/UI'
+import { Button, Drawer, EmptyState, Field, Panel, Segmented, Select } from '../components/UI'
 import { cx } from '../lib/utils'
+
+const STORAGE_KEY = 'klarity_brand_assets_v2'
 
 const swatches = [
   { name: 'Cream', hex: '#F6F1E6' },
@@ -189,7 +198,7 @@ function SocialPlate() {
   )
 }
 
-const assets = [
+const defaultAssets = [
   {
     id: 'logo-primary',
     title: 'Primary lockup',
@@ -197,8 +206,10 @@ const assets = [
     type: 'SVG',
     size: '18 KB',
     updated: '12 Nov 2026',
+    owner: 'Brand team',
+    usage: 'Digital and print',
     description: 'The default horizontal lockup. Cream and ink versions are approved for digital and print.',
-    render: (large) => <LogoPlate dark={large} />,
+    plateType: 'logo-primary',
   },
   {
     id: 'logo-mono',
@@ -207,8 +218,10 @@ const assets = [
     type: 'SVG',
     size: '9 KB',
     updated: '08 Nov 2026',
+    owner: 'Brand team',
+    usage: 'Digital only',
     description: 'Reserved for the mark, social avatars, and small placements. Never use it to replace the wordmark in copy.',
-    render: () => <MonogramPlate />,
+    plateType: 'logo-mono',
   },
   {
     id: 'palette',
@@ -217,8 +230,10 @@ const assets = [
     type: 'ASE · CSS',
     size: '4 KB',
     updated: '04 Nov 2026',
+    owner: 'Design ops',
+    usage: 'Tokens & themes',
     description: 'Cream, ink, sage, and clay. Sage carries action and selection; it is never decorative.',
-    render: () => <PalettePlate />,
+    plateType: 'palette',
   },
   {
     id: 'type',
@@ -227,8 +242,10 @@ const assets = [
     type: 'Specimen',
     size: '28 KB',
     updated: '01 Nov 2026',
+    owner: 'Typography lead',
+    usage: 'UI and editorial',
     description: 'Bricolage Grotesque for display, Manrope for interface and body. One display moment per screen.',
-    render: () => <TypePlate />,
+    plateType: 'type',
   },
   {
     id: 'campaign-slower',
@@ -237,8 +254,10 @@ const assets = [
     type: 'SVG plate',
     size: '64 KB',
     updated: '10 Nov 2026',
+    owner: 'Marketing creative',
+    usage: 'Campaign hero',
     description: 'Spring campaign plate. Organic sage field, quiet type, generous cream. Synthetic demonstration artwork.',
-    render: () => <CampaignPlate variant={1} />,
+    plateType: 'campaign-1',
   },
   {
     id: 'campaign-washed',
@@ -247,8 +266,10 @@ const assets = [
     type: 'SVG plate',
     size: '58 KB',
     updated: '10 Nov 2026',
+    owner: 'Marketing creative',
+    usage: 'Editorial placement',
     description: 'Autumn campaign plate. Ink ground with sage depth and a linen-rule detail. Synthetic demonstration artwork.',
-    render: () => <CampaignPlate variant={2} />,
+    plateType: 'campaign-2',
   },
   {
     id: 'campaign-oak',
@@ -257,8 +278,10 @@ const assets = [
     type: 'SVG plate',
     size: '52 KB',
     updated: '09 Nov 2026',
+    owner: 'Creative ops',
+    usage: 'Packaging & web',
     description: 'Object-led composition using the core palette. Synthetic demonstration artwork.',
-    render: () => <CampaignPlate variant={3} />,
+    plateType: 'campaign-3',
   },
   {
     id: 'social',
@@ -267,10 +290,46 @@ const assets = [
     type: 'SVG template',
     size: '36 KB',
     updated: '07 Nov 2026',
+    owner: 'Social team',
+    usage: 'Instagram & TikTok',
     description: 'A 4:5 story frame with the mark and a three-line close. Keep captions under 90 words.',
-    render: () => <SocialPlate />,
+    plateType: 'social',
   },
 ]
+
+function renderAssetPreview(asset, large = false) {
+  if (asset.imageUrl) {
+    return (
+      <div className={cx('asset-card__image-wrap', large && 'asset-drawer__preview--uploaded')}>
+        <img src={asset.imageUrl} alt={asset.title} className="asset-uploaded-img" />
+      </div>
+    )
+  }
+  switch (asset.plateType) {
+    case 'logo-primary':
+      return <LogoPlate dark={large} />
+    case 'logo-mono':
+      return <MonogramPlate />
+    case 'palette':
+      return <PalettePlate />
+    case 'type':
+      return <TypePlate />
+    case 'campaign-1':
+      return <CampaignPlate variant={1} />
+    case 'campaign-2':
+      return <CampaignPlate variant={2} />
+    case 'campaign-3':
+      return <CampaignPlate variant={3} />
+    case 'social':
+      return <SocialPlate />
+    default:
+      return (
+        <div className="asset-card__image-wrap">
+          <FileCheck2 size={36} style={{ color: 'var(--sage)' }} />
+        </div>
+      )
+  }
+}
 
 const filters = [
   { value: 'all', label: 'All' },
@@ -280,14 +339,64 @@ const filters = [
   { value: 'campaign', label: 'Campaign' },
 ]
 
+const categoryOptions = [
+  { value: 'logos', label: 'Logos & Wordmarks' },
+  { value: 'colour', label: 'Colour & Palettes' },
+  { value: 'typography', label: 'Typography & Fonts' },
+  { value: 'campaign', label: 'Campaign & Creative' },
+]
+
 export function Assets() {
   const { toast } = useApp()
   const [filter, setFilter] = useState('all')
   const [selected, setSelected] = useState(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editForm, setEditForm] = useState(null)
+
+  // Upload Drawer State
+  const [uploadOpen, setUploadOpen] = useState(false)
+  const [uploadFile, setUploadFile] = useState(null)
+  const [uploadForm, setUploadForm] = useState({
+    title: '',
+    kind: 'logos',
+    type: 'SVG',
+    description: '',
+    usage: 'Digital + print',
+    owner: 'Brand team',
+  })
+
+  // Drag and drop states
+  const [isDraggingPage, setIsDraggingPage] = useState(false)
+  const [isDraggingDropzone, setIsDraggingDropzone] = useState(false)
+  const dragCounterRef = useRef(0)
+  const fileInputRef = useRef(null)
+  const replaceInputRef = useRef(null)
+  const drawerPreviewRef = useRef(null)
+
+  // Initialize assets from localStorage or defaults
+  const [assetsList, setAssetsList] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed
+        }
+      }
+    } catch {}
+    return defaultAssets
+  })
+
+  // Persist assets to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(assetsList))
+    } catch {}
+  }, [assetsList])
 
   const visible = useMemo(
-    () => assets.filter((asset) => filter === 'all' || asset.kind === filter),
-    [filter],
+    () => assetsList.filter((asset) => filter === 'all' || asset.kind === filter),
+    [assetsList, filter],
   )
 
   const copy = async (value, label) => {
@@ -299,27 +408,274 @@ export function Assets() {
     }
   }
 
+  // Parse uploaded file
+  const processFile = (file, isReplace = false) => {
+    if (!file) return
+    const isImage = file.type.startsWith('image/')
+    const ext = file.name.split('.').pop()?.toUpperCase() || 'FILE'
+    const cleanTitle = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]+/g, ' ')
+    const formattedSize =
+      file.size > 1024 * 1024
+        ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
+        : `${Math.round(file.size / 1024)} KB`
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const dataUrl = e.target.result
+      if (isReplace) {
+        setEditForm((prev) => ({
+          ...prev,
+          imageUrl: dataUrl,
+          type: ext,
+          size: formattedSize,
+        }))
+        toast(`File replaced with ${file.name}.`, 'good')
+      } else {
+        setUploadFile({
+          name: file.name,
+          size: formattedSize,
+          type: ext,
+          dataUrl,
+        })
+        setUploadForm((prev) => ({
+          ...prev,
+          title: prev.title || cleanTitle,
+          type: ext,
+        }))
+        setUploadOpen(true)
+      }
+    }
+    reader.readAsDataURL(file)
+  }
+
+  // Page-level drag & drop listeners
+  useEffect(() => {
+    const handleDragEnter = (e) => {
+      if (e.dataTransfer?.types?.includes('Files')) {
+        dragCounterRef.current += 1
+        setIsDraggingPage(true)
+      }
+    }
+    const handleDragLeave = (e) => {
+      if (e.dataTransfer?.types?.includes('Files')) {
+        dragCounterRef.current -= 1
+        if (dragCounterRef.current <= 0) {
+          dragCounterRef.current = 0
+          setIsDraggingPage(false)
+        }
+      }
+    }
+    const handleDragOver = (e) => {
+      e.preventDefault()
+    }
+    const handleDrop = (e) => {
+      e.preventDefault()
+      dragCounterRef.current = 0
+      setIsDraggingPage(false)
+      if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+        processFile(e.dataTransfer.files[0])
+      }
+    }
+
+    window.addEventListener('dragenter', handleDragEnter)
+    window.addEventListener('dragleave', handleDragLeave)
+    window.addEventListener('dragover', handleDragOver)
+    window.addEventListener('drop', handleDrop)
+
+    return () => {
+      window.removeEventListener('dragenter', handleDragEnter)
+      window.removeEventListener('dragleave', handleDragLeave)
+      window.removeEventListener('dragover', handleDragOver)
+      window.removeEventListener('drop', handleDrop)
+    }
+  }, [])
+
+  // Create new asset
+  const handleCreateAsset = (e) => {
+    e.preventDefault()
+    if (!uploadForm.title.trim()) {
+      toast('Please provide an asset title.', 'warn')
+      return
+    }
+
+    const today = new Intl.DateTimeFormat('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    }).format(new Date())
+
+    const newAsset = {
+      id: `asset-${Date.now()}`,
+      title: uploadForm.title.trim(),
+      kind: uploadForm.kind,
+      type: uploadForm.type || 'SVG',
+      size: uploadFile?.size || '12 KB',
+      updated: today,
+      owner: uploadForm.owner || 'Brand team',
+      usage: uploadForm.usage || 'Digital + print',
+      description: uploadForm.description.trim() || 'Approved brand asset.',
+      imageUrl: uploadFile?.dataUrl || null,
+      isCustom: true,
+    }
+
+    setAssetsList((prev) => [newAsset, ...prev])
+    toast(`Asset "${newAsset.title}" added to library.`, 'good')
+    setUploadOpen(false)
+    setUploadFile(null)
+    setUploadForm({
+      title: '',
+      kind: 'logos',
+      type: 'SVG',
+      description: '',
+      usage: 'Digital + print',
+      owner: 'Brand team',
+    })
+  }
+
+  // Open asset drawer
+  const handleOpenAsset = (asset) => {
+    setSelected(asset)
+    setIsEditing(false)
+    setEditForm({
+      title: asset.title,
+      kind: asset.kind,
+      type: asset.type,
+      size: asset.size,
+      updated: asset.updated,
+      owner: asset.owner || 'Brand team',
+      usage: asset.usage || 'Digital and print',
+      description: asset.description || '',
+      imageUrl: asset.imageUrl || null,
+    })
+  }
+
+  // Save edited asset
+  const handleSaveEdit = (e) => {
+    e?.preventDefault?.()
+    if (!editForm.title.trim()) {
+      toast('Title cannot be empty.', 'warn')
+      return
+    }
+
+    setAssetsList((prev) =>
+      prev.map((item) =>
+        item.id === selected.id
+          ? {
+              ...item,
+              ...editForm,
+              title: editForm.title.trim(),
+              description: editForm.description.trim(),
+              updated: 'Today',
+            }
+          : item,
+      ),
+    )
+
+    setSelected((prev) => ({
+      ...prev,
+      ...editForm,
+      title: editForm.title.trim(),
+      description: editForm.description.trim(),
+      updated: 'Today',
+    }))
+
+    setIsEditing(false)
+    toast('Asset updated successfully.', 'good')
+  }
+
+  // Delete asset
+  const handleDeleteAsset = (id) => {
+    setAssetsList((prev) => prev.filter((item) => item.id !== id))
+    setSelected(null)
+    toast('Asset removed from library.', 'good')
+  }
+
+  // Reset to original default library
+  const handleResetDefaults = () => {
+    setAssetsList(defaultAssets)
+    setSelected(null)
+    toast('Asset library reset to defaults.', 'good')
+  }
+
+  // Download asset (real file or serialized SVG)
+  const handleDownload = (asset) => {
+    if (asset.imageUrl) {
+      const a = document.createElement('a')
+      a.href = asset.imageUrl
+      const slug = asset.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+      const ext = (asset.type || 'png').toLowerCase().replace(/[^a-z0-9]/g, '')
+      a.download = `${slug}.${ext || 'png'}`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      toast(`Downloaded ${asset.title}.`, 'good')
+      return
+    }
+
+    if (drawerPreviewRef.current) {
+      const svg = drawerPreviewRef.current.querySelector('svg')
+      if (svg) {
+        const serializer = new XMLSerializer()
+        const source = serializer.serializeToString(svg)
+        const blob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${asset.id}.svg`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+        toast(`Downloaded ${asset.title} as SVG.`, 'good')
+        return
+      }
+    }
+
+    toast(`Downloaded ${asset.title}.`, 'good')
+  }
+
   return (
     <div className="assets-page">
+      {/* Global Drag-and-Drop Overlay */}
+      {isDraggingPage && (
+        <div className="asset-global-overlay">
+          <div className="asset-global-overlay__box">
+            <UploadCloud size={48} style={{ color: 'var(--sage)' }} />
+            <h3>Drop brand file to upload</h3>
+            <p>Release anywhere to add directly to the Aster &amp; Oak asset library</p>
+          </div>
+        </div>
+      )}
+
+      {/* Page Header */}
       <section className="page-head">
         <div>
           <h1>Brand assets</h1>
           <p>The approved marks, palette, type, and campaign plates. One library, no stray exports.</p>
         </div>
         <div className="page-head__actions">
-          <span className="asset-stat">
-            <Layers size={15} /> {assets.length} approved assets
-          </span>
-          <Button
-            icon={Upload}
-            variant="secondary"
-            onClick={() => toast('Uploads are mocked in this local demo.', 'info')}
-          >
+          <div className="asset-stat-group">
+            <span className="asset-stat">
+              <Layers size={15} /> {assetsList.length} approved assets
+            </span>
+            {assetsList.length !== defaultAssets.length && (
+              <button
+                type="button"
+                className="asset-reset-btn"
+                onClick={handleResetDefaults}
+                title="Restore default assets"
+              >
+                Reset library
+              </button>
+            )}
+          </div>
+          <Button icon={Upload} variant="primary" onClick={() => setUploadOpen(true)}>
             Upload asset
           </Button>
         </div>
       </section>
 
+      {/* Category Tabs & Note */}
       <div className="asset-toolbar">
         <Segmented label="Filter assets" value={filter} onChange={setFilter} options={filters} />
         <span className="asset-toolbar__note">
@@ -327,6 +683,7 @@ export function Assets() {
         </span>
       </div>
 
+      {/* Asset Cards Grid */}
       {visible.length ? (
         <div className="asset-grid">
           {visible.map((asset) => (
@@ -334,9 +691,9 @@ export function Assets() {
               key={asset.id}
               type="button"
               className={cx('asset-card', asset.kind === 'campaign' && 'asset-card--campaign')}
-              onClick={() => setSelected(asset)}
+              onClick={() => handleOpenAsset(asset)}
             >
-              <span className="asset-card__preview">{asset.render(false)}</span>
+              <span className="asset-card__preview">{renderAssetPreview(asset, false)}</span>
               <span className="asset-card__foot">
                 <span>
                   <strong>{asset.title}</strong>
@@ -354,8 +711,8 @@ export function Assets() {
       ) : (
         <EmptyState
           icon={Images}
-          title="No assets in this view"
-          description="Choose another category to browse the library."
+          title="No assets in this category"
+          description="Drag and drop brand files or choose another category to browse."
           action={
             <Button variant="secondary" onClick={() => setFilter('all')}>
               Show all assets
@@ -364,6 +721,7 @@ export function Assets() {
         />
       )}
 
+      {/* Core Palette Section */}
       <section className="palette-section">
         <div className="palette-section__head">
           <div>
@@ -394,6 +752,7 @@ export function Assets() {
         </div>
       </section>
 
+      {/* Asset Guidelines Link Section */}
       <section className="asset-guidelines">
         <div>
           <span className="asset-guidelines__icon">
@@ -418,61 +777,334 @@ export function Assets() {
         </div>
       </section>
 
+      {/* Upload New Asset Drawer */}
+      <Drawer
+        open={uploadOpen}
+        onClose={() => {
+          setUploadOpen(false)
+          setUploadFile(null)
+        }}
+        title="Upload new brand asset"
+        description="Add a logo, campaign plate, typography specimen, or color palette to the workspace library."
+        width="560px"
+        footer={
+          <div className="drawer__actions drawer__actions--between">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setUploadOpen(false)
+                setUploadFile(null)
+              }}
+            >
+              Cancel
+            </Button>
+            <Button variant="primary" icon={Plus} onClick={handleCreateAsset}>
+              Add to library
+            </Button>
+          </div>
+        }
+      >
+        <form className="asset-edit-form" onSubmit={handleCreateAsset}>
+          {/* Dropzone */}
+          <div
+            className={cx('asset-dropzone', isDraggingDropzone && 'is-dragover')}
+            onClick={() => fileInputRef.current?.click()}
+            onDragOver={(e) => {
+              e.preventDefault()
+              setIsDraggingDropzone(true)
+            }}
+            onDragLeave={() => setIsDraggingDropzone(false)}
+            onDrop={(e) => {
+              e.preventDefault()
+              setIsDraggingDropzone(false)
+              if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+                processFile(e.dataTransfer.files[0])
+              }
+            }}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,.svg,.pdf,.ase,.woff,.woff2,.ttf"
+              onChange={(e) => {
+                if (e.target.files && e.target.files[0]) {
+                  processFile(e.target.files[0])
+                }
+              }}
+              style={{ display: 'none' }}
+            />
+
+            {uploadFile?.dataUrl ? (
+              <div className="asset-dropzone__preview" onClick={(e) => e.stopPropagation()}>
+                <img src={uploadFile.dataUrl} alt="Upload preview" />
+                <button
+                  type="button"
+                  className="asset-dropzone__clear-btn"
+                  title="Remove file"
+                  onClick={() => setUploadFile(null)}
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="asset-dropzone__icon-wrap">
+                  <FileUp size={22} />
+                </div>
+                <div className="asset-dropzone__title">
+                  Drag &amp; drop your file here, or <span style={{ color: 'var(--sage)' }}>browse</span>
+                </div>
+                <div className="asset-dropzone__hint">Supports SVG, PNG, JPG, WebP, PDF, ASE palettes</div>
+              </>
+            )}
+          </div>
+
+          <Field label="Asset Title" htmlFor="upload-title">
+            <input
+              id="upload-title"
+              type="text"
+              className="asset-form-input"
+              value={uploadForm.title}
+              onChange={(e) => setUploadForm({ ...uploadForm, title: e.target.value })}
+              placeholder="e.g. Autumn 2026 Hero Banner"
+              required
+            />
+          </Field>
+
+          <div className="asset-form-grid">
+            <Field label="Category / Kind" htmlFor="upload-kind">
+              <Select
+                id="upload-kind"
+                value={uploadForm.kind}
+                options={categoryOptions}
+                onChange={(val) => setUploadForm({ ...uploadForm, kind: val })}
+              />
+            </Field>
+
+            <Field label="Format / Type" htmlFor="upload-type">
+              <input
+                id="upload-type"
+                type="text"
+                className="asset-form-input"
+                value={uploadForm.type}
+                onChange={(e) => setUploadForm({ ...uploadForm, type: e.target.value })}
+                placeholder="SVG, PNG 2x, etc."
+              />
+            </Field>
+          </div>
+
+          <div className="asset-form-grid">
+            <Field label="Approved Usage" htmlFor="upload-usage">
+              <input
+                id="upload-usage"
+                type="text"
+                className="asset-form-input"
+                value={uploadForm.usage}
+                onChange={(e) => setUploadForm({ ...uploadForm, usage: e.target.value })}
+                placeholder="e.g. Digital + print"
+              />
+            </Field>
+
+            <Field label="Owner / Team" htmlFor="upload-owner">
+              <input
+                id="upload-owner"
+                type="text"
+                className="asset-form-input"
+                value={uploadForm.owner}
+                onChange={(e) => setUploadForm({ ...uploadForm, owner: e.target.value })}
+                placeholder="e.g. Brand team"
+              />
+            </Field>
+          </div>
+
+          <Field label="Description &amp; Guidelines" htmlFor="upload-desc">
+            <textarea
+              id="upload-desc"
+              className="asset-form-textarea"
+              value={uploadForm.description}
+              onChange={(e) => setUploadForm({ ...uploadForm, description: e.target.value })}
+              placeholder="Provide context or rules on when and how this asset should be used..."
+            />
+          </Field>
+        </form>
+      </Drawer>
+
+      {/* Asset Details & Edit Drawer */}
       <Drawer
         open={Boolean(selected)}
-        onClose={() => setSelected(null)}
-        title={selected?.title || 'Asset'}
-        description={selected?.description}
+        onClose={() => {
+          setSelected(null)
+          setIsEditing(false)
+        }}
+        title={isEditing ? `Edit ${selected?.title}` : selected?.title || 'Asset'}
+        description={isEditing ? 'Update asset metadata, rules, or replace the artwork.' : selected?.description}
         width="620px"
         footer={
           selected ? (
-            <div className="drawer__actions drawer__actions--between">
-              <span className="asset-drawer__meta">
-                {selected.type} · {selected.size} · Updated {selected.updated}
-              </span>
-              <div className="asset-drawer__buttons">
-                <Button
-                  variant="secondary"
-                  icon={Copy}
-                  onClick={() => copy(selected.title, 'Asset reference')}
-                >
-                  Copy reference
-                </Button>
-                <Button
-                  icon={Download}
-                  onClick={() => toast('Download is mocked in this local demo.', 'info')}
-                >
-                  Download
-                </Button>
+            <div className="asset-drawer__actions-bar">
+              <div className="asset-drawer__left-meta">
+                {isEditing ? (
+                  <Button
+                    variant="ghost"
+                    icon={Trash2}
+                    onClick={() => handleDeleteAsset(selected.id)}
+                    style={{ color: 'var(--danger)' }}
+                  >
+                    Delete asset
+                  </Button>
+                ) : (
+                  <span>
+                    {selected.type} · {selected.size} · Updated {selected.updated}
+                  </span>
+                )}
+              </div>
+              <div className="asset-drawer__right-actions">
+                {isEditing ? (
+                  <>
+                    <Button variant="ghost" onClick={() => setIsEditing(false)}>
+                      Cancel
+                    </Button>
+                    <Button variant="primary" icon={Check} onClick={handleSaveEdit}>
+                      Save changes
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="secondary" icon={Edit3} onClick={() => setIsEditing(true)}>
+                      Edit asset
+                    </Button>
+                    <Button variant="secondary" icon={Copy} onClick={() => copy(selected.title, 'Asset reference')}>
+                      Copy reference
+                    </Button>
+                    <Button variant="primary" icon={Download} onClick={() => handleDownload(selected)}>
+                      Download
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           ) : null
         }
       >
         {selected ? (
-          <div className="asset-drawer">
-            <div className={cx('asset-drawer__preview', selected.kind === 'campaign' && 'is-campaign')}>
-              {selected.render(true)}
-            </div>
-            <div className="asset-drawer__facts">
-              <div>
-                <span>Approved</span>
-                <strong>12 Nov 2026</strong>
+          isEditing ? (
+            /* Edit Mode */
+            <form className="asset-edit-form" onSubmit={handleSaveEdit}>
+              {/* Replace file area */}
+              <div
+                className="asset-dropzone"
+                onClick={() => replaceInputRef.current?.click()}
+              >
+                <input
+                  ref={replaceInputRef}
+                  type="file"
+                  accept="image/*,.svg,.pdf,.ase"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      processFile(e.target.files[0], true)
+                    }
+                  }}
+                  style={{ display: 'none' }}
+                />
+                <div className="asset-dropzone__icon-wrap">
+                  <Upload size={18} />
+                </div>
+                <div className="asset-dropzone__title">Click or drop to replace asset artwork</div>
+                <div className="asset-dropzone__hint">Will update thumbnail and download file</div>
               </div>
-              <div>
-                <span>Owner</span>
-                <strong>Brand team</strong>
+
+              <Field label="Title" htmlFor="edit-title">
+                <input
+                  id="edit-title"
+                  type="text"
+                  className="asset-form-input"
+                  value={editForm.title}
+                  onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                  required
+                />
+              </Field>
+
+              <div className="asset-form-grid">
+                <Field label="Category" htmlFor="edit-kind">
+                  <Select
+                    id="edit-kind"
+                    value={editForm.kind}
+                    options={categoryOptions}
+                    onChange={(val) => setEditForm({ ...editForm, kind: val })}
+                  />
+                </Field>
+
+                <Field label="Format / Type" htmlFor="edit-type">
+                  <input
+                    id="edit-type"
+                    type="text"
+                    className="asset-form-input"
+                    value={editForm.type}
+                    onChange={(e) => setEditForm({ ...editForm, type: e.target.value })}
+                  />
+                </Field>
               </div>
-              <div>
-                <span>Usage</span>
-                <strong>Digital + print</strong>
+
+              <div className="asset-form-grid">
+                <Field label="Usage Scope" htmlFor="edit-usage">
+                  <input
+                    id="edit-usage"
+                    type="text"
+                    className="asset-form-input"
+                    value={editForm.usage}
+                    onChange={(e) => setEditForm({ ...editForm, usage: e.target.value })}
+                  />
+                </Field>
+
+                <Field label="Owner" htmlFor="edit-owner">
+                  <input
+                    id="edit-owner"
+                    type="text"
+                    className="asset-form-input"
+                    value={editForm.owner}
+                    onChange={(e) => setEditForm({ ...editForm, owner: e.target.value })}
+                  />
+                </Field>
+              </div>
+
+              <Field label="Description &amp; Guidelines" htmlFor="edit-desc">
+                <textarea
+                  id="edit-desc"
+                  className="asset-form-textarea"
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                />
+              </Field>
+            </form>
+          ) : (
+            /* View Mode */
+            <div className="asset-drawer">
+              <div
+                ref={drawerPreviewRef}
+                className={cx('asset-drawer__preview', selected.kind === 'campaign' && 'is-campaign')}
+              >
+                {renderAssetPreview(selected, true)}
+              </div>
+              <div className="asset-drawer__facts">
+                <div>
+                  <span>Approved</span>
+                  <strong>{selected.updated || '12 Nov 2026'}</strong>
+                </div>
+                <div>
+                  <span>Owner</span>
+                  <strong>{selected.owner || 'Brand team'}</strong>
+                </div>
+                <div>
+                  <span>Usage</span>
+                  <strong>{selected.usage || 'Digital + print'}</strong>
+                </div>
+              </div>
+              <div className="asset-drawer__note">
+                <Check size={15} />
+                <p>This asset is verified and governed by active brand guidelines. No stale export can drift.</p>
               </div>
             </div>
-            <div className="asset-drawer__note">
-              <Check size={15} />
-              <p>This preview is generated from the live brand tokens. No stale export can drift from the library.</p>
-            </div>
-          </div>
+          )
         ) : null}
       </Drawer>
     </div>

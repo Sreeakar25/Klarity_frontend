@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import {
   ArrowRight,
   BookOpen,
-  CheckCircle2,
   ChevronRight,
   Clock,
   ExternalLink,
@@ -15,9 +14,7 @@ import {
   RotateCcw,
   Scale,
   Shield,
-  ShieldCheck,
   Sparkles,
-  Zap,
 } from 'lucide-react'
 import { BrandMark } from '../components/BrandMark'
 import { AnimatedValue } from '../components/AnimatedValue'
@@ -36,7 +33,6 @@ export function Hero() {
             <BrandMark size={32} />
             <div className="hero-brand__copy">
               <span className="hero-brand__name">Klarity</span>
-              <span className="hero-brand__badge">Intelligence</span>
             </div>
           </Link>
 
@@ -47,13 +43,7 @@ export function Hero() {
             <a href="#metrics">Impact</a>
           </nav>
 
-          <div className="hero-nav__actions">
-            <Link to="/login" className="hero-btn hero-btn--primary">
-              <Lock size={14} />
-              <span>Enterprise Sign In</span>
-              <ArrowRight size={15} />
-            </Link>
-          </div>
+
         </div>
       </header>
 
@@ -71,28 +61,6 @@ export function Hero() {
             Real-time copy auditing, visual asset compliance, and approved lexicon enforcement
             across every marketing touchpoint.
           </p>
-
-          <div className="hero-cta-group">
-            <Link to="/login" className="hero-btn hero-btn--lg hero-btn--primary">
-              <Lock size={16} />
-              <span>Enterprise Sign In</span>
-              <ArrowRight size={17} />
-            </Link>
-          </div>
-
-          <div className="hero-proof-strip">
-            <span className="hero-proof-item">
-              <CheckCircle2 size={14} /> No browser plugins required
-            </span>
-            <span className="hero-proof-divider" />
-            <span className="hero-proof-item">
-              <ShieldCheck size={14} /> SOC2 Type II &amp; ISO 27001
-            </span>
-            <span className="hero-proof-divider" />
-            <span className="hero-proof-item">
-              <Zap size={14} /> Instant REST API &amp; Webhooks
-            </span>
-          </div>
         </div>
 
         {/* Live Interactive Product Plate (Stitch Mockup) */}
