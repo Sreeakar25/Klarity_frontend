@@ -13,13 +13,19 @@ async function request(path, options = {}) {
     } catch {
       // keep the status text
     }
-    throw new Error(detail)
+    const error = new Error(detail)
+    error.status = response.status
+    throw error
   }
   if (response.status === 204) return null
   return response.json()
 }
 
 export const api = {
+  me: () => request('/auth/me'),
+  login: (payload) => request('/auth/login', { method: 'POST', body: JSON.stringify(payload) }),
+  register: (payload) => request('/auth/register', { method: 'POST', body: JSON.stringify(payload) }),
+  logout: () => request('/auth/logout', { method: 'POST' }),
   bootstrap: () => request('/bootstrap'),
   createSubmission: (payload) =>
     request('/submissions', { method: 'POST', body: JSON.stringify(payload) }),

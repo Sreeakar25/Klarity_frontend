@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, selectinload
 
 from database import get_db
+from auth import Account, current_account
 from models import (
     ActionType,
     BrandGuideline,
@@ -77,7 +78,7 @@ def get_submission(submission_id: int, db: Session = Depends(get_db)) -> Content
 
 
 @router.post("", response_model=ContentSubmissionDetail, status_code=201)
-def create_submission(payload: ContentSubmit, db: Session = Depends(get_db)) -> ContentSubmission:
+def create_submission(payload: ContentSubmit, db: Session = Depends(get_db), account: Account = Depends(current_account)) -> ContentSubmission:
     try:
         content_type = ContentType(payload.content_type)
     except ValueError:
@@ -87,7 +88,7 @@ def create_submission(payload: ContentSubmit, db: Session = Depends(get_db)) -> 
         title=payload.title.strip(),
         content_type=content_type,
         content_text=payload.content_text.strip(),
-        submitted_by=payload.submitted_by.strip(),
+        submitted_by=account.username,
         status=SubmissionStatus.reviewing,
         submitted_at=datetime.utcnow(),
     )
@@ -126,6 +127,7 @@ def create_submission(payload: ContentSubmit, db: Session = Depends(get_db)) -> 
 def review_submission(
     submission_id: int,
     payload: ActionRequest,
+    account: Account = Depends(current_account),
     db: Session = Depends(get_db),
 ) -> ContentSubmission:
     submission = _submission(db, submission_id)
@@ -136,7 +138,7 @@ def review_submission(
     action = ReviewAction(
         report=report,
         action=payload.action,
-        performed_by=payload.performed_by.strip(),
+        performed_by=account.username,
         comment=payload.comment.strip() if payload.comment else None,
         created_at=datetime.utcnow(),
     )

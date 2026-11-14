@@ -7,6 +7,7 @@ from statistics import mean
 from typing import Dict, List
 
 from sqlalchemy.orm import Session, selectinload
+from config import SEED_DEMO_DATA
 
 from models import (
     ActionType,
@@ -229,5 +230,5 @@ def build_bootstrap(db: Session) -> BootstrapOut:
         trends=build_trends(submissions, reports),
         issue_breakdown=build_issue_breakdown(reports),
         coverage=build_coverage(db, reports),
-        demo_data=True,
+        demo_data=SEED_DEMO_DATA,
     )

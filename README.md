@@ -107,8 +107,64 @@ Klarity is an intelligent brand-governance platform that reviews content before 
 
 ---
 
-> **Note:** This is the proposed architecture. No component has been implemented yet.
+## Run the standalone backend
+
+The FastAPI server uses SQLite. No cloud account or database password is needed.
+Data persists in `backend/klarity.db`, independently of the working directory.
+Tables are created on startup, and existing records are preserved.
+
+From the repository root:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python -m pip install -r backend/requirements.txt
+.\.venv\Scripts\python -m uvicorn main:app --app-dir backend --host 127.0.0.1 --port 8000
+```
+
+In a second terminal, run `npm install` and `npm run dev` inside `frontend`.
+Vite forwards `/api` requests to port 8000.
+API documentation: `http://127.0.0.1:8000/docs`.
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /api/health` | Check database connectivity |
+| `GET /api/bootstrap` | Dashboard, guidelines, reports, trends, and activity |
+| `GET/POST /api/guidelines` | List or create brand guidelines |
+| `GET/PATCH/DELETE /api/guidelines/{id}` | Read, edit, or remove a guideline |
+| `GET/POST /api/submissions` | List content or submit it for rule-based analysis |
+| `GET /api/submissions/{id}` | Read a submission and its reports |
+| `POST /api/submissions/{id}/action` | Approve, reject, or request changes |
+
+Optional configuration lives in `backend/.env` (see `.env.example`). Set
+`SEED_DEMO_DATA=false` before the first start for an empty workspace. This does
+not remove sample records already stored. `CORS_ORIGINS` controls allowed
+frontend origins. The API uses account authentication and a shared workspace. Per-role permissions
+and email verification are not implemented, so run it locally. Analysis is rule-based, with no LLM service.
+
+Run isolated API regression tests from the repository root:
+
+```powershell
+.\.venv\Scripts\python -m pip install httpx==0.28.1
+.\.venv\Scripts\python -m unittest discover -s backend -v
+```
+
+Tests use temporary SQLite storage and do not alter workspace records.
 
 ## 📄 License
 
 *Not yet decided*
+
+### Accounts
+
+Create an account on `/login` with a username, email (Gmail supported), and a
+password of at least 8 characters. Sign in using the username or email. Passwords
+are salted PBKDF2 hashes. Sessions expire after 24 hours and logout revokes them.
+Workspace APIs require authentication; submission and review authors come from
+the session. This is email/password login, not Google OAuth.
+
+For local testing, `ENABLE_TEST_ACCOUNT=true` creates `ashwik@topper` (username
+`ashwik`) with password `klarity`. This special test address is not a deliverable
+email address. The account is created only if absent; startup never resets its
+password. Use a separate database without this test account before deployment,
+set `ENABLE_TEST_ACCOUNT=false`, and use HTTPS with `COOKIE_SECURE=true`.
+The old demo SSO, any-password login, and password reset simulation are removed.

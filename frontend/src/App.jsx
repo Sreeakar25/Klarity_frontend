@@ -41,7 +41,7 @@ function LoadingScreen() {
 }
 
 function AppShell() {
-  const { data, loading, toasts, dismissToast } = useApp()
+  const { user, data, loading, toasts, dismissToast, refresh } = useApp()
   const [navOpen, setNavOpen] = useState(false)
   const [reviewOpen, setReviewOpen] = useState(false)
   const location = useLocation()
@@ -59,7 +59,7 @@ function AppShell() {
     }
   }, [location.pathname])
 
-  if (loading || !data) return <LoadingScreen />
+  if (loading) return <LoadingScreen />
 
   const isPublic = location.pathname === '/hero' || location.pathname === '/login'
 
@@ -75,6 +75,9 @@ function AppShell() {
       </div>
     )
   }
+
+  if (!user) return <Navigate to="/login" replace />
+  if (!data) return <div className="loading-screen"><p>Workspace unavailable.</p><button onClick={() => refresh().catch(() => {})}>Try again</button></div>
 
   return (
     <div className="app-shell">

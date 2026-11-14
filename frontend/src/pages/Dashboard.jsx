@@ -100,7 +100,7 @@ function ActivityIcon({ kind }) {
 }
 
 export function Dashboard({ onNewReview }) {
-  const { data } = useApp()
+  const { data, currentUser } = useApp()
   const { stats, submissions, trends, issue_breakdown: breakdown, coverage, activity } = data
   const [period, setPeriod] = useState('30d')
 
@@ -169,7 +169,7 @@ export function Dashboard({ onNewReview }) {
       <section className="page-hero">
         <div className="page-hero__copy">
           <h1>
-            {greeting()}, Kruthik<span className="accent-dot">.</span>
+            {greeting()}, {currentUser}<span className="accent-dot">.</span>
           </h1>
           <p>
             Aster &amp; Oak is holding at <strong>{Math.round(stats.avg_score)}/100</strong> across 12 channels.

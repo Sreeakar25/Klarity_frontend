@@ -58,7 +58,7 @@ const kindIcon = {
 }
 
 export function Topbar({ onMenu, onNewReview, currentPath }) {
-  const { data } = useApp()
+  const { data, user, logout, toast } = useApp()
   const navigate = useNavigate()
   const location = useLocation()
   const [paletteOpen, setPaletteOpen] = useState(false)
@@ -192,23 +192,24 @@ export function Topbar({ onMenu, onNewReview, currentPath }) {
           <div className="topbar__popover-wrap">
             <button
               className={cx('user-chip', openMenu === 'user' && 'is-active')}
+              aria-label={`Account: ${user.username}`}
               type="button"
               onClick={() => setOpenMenu(openMenu === 'user' ? null : 'user')}
             >
-              <Avatar name="Kruthik Kamegaonkar" />
+              <Avatar name={user.username} />
               <span className="user-chip__copy">
-                <strong>Kruthik</strong>
-                <small>Admin</small>
+                <strong>{user.username}</strong>
+                <small>Member</small>
               </span>
               <ChevronDown size={14} />
             </button>
             {openMenu === 'user' ? (
               <AnimatedPopover className="popover popover--user">
                 <div className="popover__identity">
-                  <Avatar name="Kruthik Kamegaonkar" size="lg" />
+                  <Avatar name={user.username} size="lg" />
                   <div>
-                    <strong>Kruthik Kamegaonkar</strong>
-                    <p>kruthik@localhost5000.dev</p>
+                    <strong>{user.username}</strong>
+                    <p>{user.email}</p>
                   </div>
                 </div>
                 <button onClick={() => { setOpenMenu(null); navigate('/settings') }}>
@@ -217,12 +218,12 @@ export function Topbar({ onMenu, onNewReview, currentPath }) {
                 <button onClick={() => { setOpenMenu(null); navigate('/hero') }}>
                   <Sparkles size={15} /> Product overview
                 </button>
-                <button onClick={() => { setOpenMenu(null); navigate('/login') }}>
+                <button onClick={async () => { try { await logout(); setOpenMenu(null); navigate('/login') } catch (error) { toast(error.message, 'warn') } }}>
                   <LogOut size={15} /> Sign out
                 </button>
                 <div className="popover__meta">
                   <span>Aster &amp; Oak</span>
-                  <span>Admin</span>
+                  <span>Member</span>
                 </div>
               </AnimatedPopover>
             ) : null}

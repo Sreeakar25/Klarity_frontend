@@ -1,24 +1,23 @@
-"""
-Database configuration for Klarity backend.
-Uses SQLite for local development / demo purposes.
-"""
+"""SQLite persistence for the standalone Klarity server."""
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
-DATABASE_URL = "sqlite:///./klarity.db"
+from config import DATABASE_URL
 
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+engine = create_engine(
+    DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    pool_pre_ping=True,
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 class Base(DeclarativeBase):
-    """Declarative base for all ORM models."""
     pass
 
 
 def get_db():
-    """FastAPI dependency that yields a database session."""
     db = SessionLocal()
     try:
         yield db
@@ -27,5 +26,6 @@ def get_db():
 
 
 def init_db():
-    """Create all tables if they don't already exist."""
+    import models  # Register all models before creating tables.
+
     Base.metadata.create_all(bind=engine)
