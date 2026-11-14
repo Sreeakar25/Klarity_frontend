@@ -26,7 +26,7 @@ const items = [
 ]
 
 export function Sidebar({ open, onClose, onNewReview }) {
-  const { data, connected, toast } = useApp()
+  const { data, toast } = useApp()
   const location = useLocation()
   const queue = data?.stats?.pending_reviews ?? 0
   const score = data?.stats?.avg_score ?? 88
@@ -151,13 +151,6 @@ export function Sidebar({ open, onClose, onNewReview }) {
           </div>
           <p>Up 1.6 points over the last 30 days</p>
         </NavLink>
-
-
-        <div className="rail-foot">
-          <span className={cx('connection-dot', connected && 'is-live')} />
-          <span>{connected ? 'API connected' : 'Local demo data'}</span>
-          <span className="rail-foot__version">v0.1</span>
-        </div>
       </div>
     </aside>
   )
