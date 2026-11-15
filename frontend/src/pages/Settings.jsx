@@ -115,6 +115,7 @@ export function Settings() {
           <a href="#review-defaults"><SlidersHorizontal size={15} /> Review defaults</a>
           <a href="#notifications"><Bell size={15} /> Notifications</a>
           <a href="#team"><Users size={15} /> Team</a>
+          <a href="#ai-disclosure"><ShieldCheck size={15} /> AI &amp; Confidentiality</a>
         </nav>
 
         <div className="settings-content">
@@ -290,6 +291,40 @@ export function Settings() {
               <p>
                 Creators can submit and revise. Reviewers can approve, reject, and request changes. Admins can also
                 publish guidelines and manage the team.
+              </p>
+            </div>
+          </Panel>
+
+          <Panel className="settings-section" id="ai-disclosure">
+            <SectionHead
+              title="AI Transparency &amp; Confidentiality"
+              description="Privacy controls, zero-retention guarantees, and ethical AI disclosures."
+              action={<ShieldCheck size={18} className="settings-section__icon" />}
+            />
+            <div className="toggle-stack toggle-stack--flush">
+              <ToggleRow
+                label="Zero Data Retention (ZDR)"
+                description="Content evaluated in Klarity is never used for training foundational models or retained by third parties."
+                checked={settings.zeroDataRetention ?? true}
+                onChange={(value) => update('zeroDataRetention', value)}
+              />
+              <ToggleRow
+                label="Confidential Material Masking"
+                description="Automatically redact unreleased codenames, customer PII, and financial figures before pre-flight analysis."
+                checked={settings.confidentialMasking ?? true}
+                onChange={(value) => update('confidentialMasking', value)}
+              />
+              <ToggleRow
+                label="Disclose AI Review Watermark"
+                description="Clearly disclose on review reports that content was evaluated with Klarity's hybrid rule-based and AI pipeline."
+                checked={settings.discloseAi ?? true}
+                onChange={(value) => update('discloseAi', value)}
+              />
+            </div>
+            <div className="settings-note">
+              <ShieldCheck size={16} />
+              <p>
+                <strong>Architecture Disclosure:</strong> Klarity uses a hybrid evaluation engine combining deterministic AST rule-checking (for terminology, facts, and WCAG accessibility) with localized RAG for tone nuances. All decisions remain strictly human-controlled.
               </p>
             </div>
           </Panel>
