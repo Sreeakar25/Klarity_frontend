@@ -19,17 +19,17 @@ import { cx } from '../lib/utils'
 import { animateSlidingPill } from '../lib/animations'
 
 const items = [
-  { to: '/', label: 'Overview', icon: LayoutDashboard },
-  { to: '/studio', label: 'Creator Studio', icon: Sparkles },
-  { to: '/reviews', label: 'Reviews', icon: FileClock, badge: true },
-  { to: '/calendar', label: 'Calendar', icon: Calendar },
-  { to: '/guidelines', label: 'Guidelines', icon: BookOpen },
-  { to: '/assets', label: 'Brand assets', icon: Images },
-  { to: '/insights', label: 'Insights', icon: ChartNoAxesCombined },
+  { to: '/', key: 'overview', label: 'Overview', icon: LayoutDashboard },
+  { to: '/studio', key: 'studio', label: 'Creator Studio', icon: Sparkles },
+  { to: '/reviews', key: 'reviews', label: 'Reviews', icon: FileClock, badge: true },
+  { to: '/calendar', key: 'calendar', label: 'Calendar', icon: Calendar },
+  { to: '/guidelines', key: 'guidelines', label: 'Guidelines', icon: BookOpen },
+  { to: '/assets', key: 'assets', label: 'Brand assets', icon: Images },
+  { to: '/insights', key: 'insights', label: 'Insights', icon: ChartNoAxesCombined },
 ]
 
 export function Sidebar({ open, onClose, onNewReview }) {
-  const { data, toast, isLead, currentUser } = useApp()
+  const { data, toast, isLead, currentUser, canViewModule, isOwner } = useApp()
   const location = useLocation()
   const queue = isLead
     ? (data?.stats?.pending_reviews ?? 0)
@@ -91,7 +91,7 @@ export function Sidebar({ open, onClose, onNewReview }) {
       <nav className="sidebar__nav sidebar__nav--animated" ref={navRef}>
         <div className="nav-highlight-pill" ref={pillRef} aria-hidden="true" />
         <p className="sidebar__label">Workspace</p>
-        {items.map((item) => {
+        {items.filter(item => canViewModule(item.key)).map((item) => {
           const Icon = item.icon
           const label = item.to === '/reviews' && !isLead ? 'My submissions' : item.label
           return (
@@ -110,14 +110,16 @@ export function Sidebar({ open, onClose, onNewReview }) {
         })}
 
         <p className="sidebar__label sidebar__label--second">Manage</p>
-        <NavLink
-          to="/settings"
-          className={({ isActive }) => cx('nav-item', isActive && 'is-active')}
-          onClick={onClose}
-        >
-          <Settings size={18} strokeWidth={1.8} />
-          <span>Settings</span>
-        </NavLink>
+        {canViewModule('settings') && (
+          <NavLink
+            to="/settings"
+            className={({ isActive }) => cx('nav-item', isActive && 'is-active')}
+            onClick={onClose}
+          >
+            <Settings size={18} strokeWidth={1.8} />
+            <span>Settings</span>
+          </NavLink>
+        )}
         <NavLink
           to="/hero"
           className={({ isActive }) => cx('nav-item', isActive && 'is-active')}

@@ -61,7 +61,7 @@ const kindIcon = {
 }
 
 export function Topbar({ onMenu, onNewReview, currentPath }) {
-  const { data, user, logout, toast, currentRole, switchRole, isLead } = useApp()
+  const { data, user, logout, toast, currentRole, switchRole, isOwner, isReviewer, isMember, isLead } = useApp()
   const navigate = useNavigate()
   const location = useLocation()
   const [paletteOpen, setPaletteOpen] = useState(false)
@@ -235,7 +235,7 @@ export function Topbar({ onMenu, onNewReview, currentPath }) {
               <Avatar name={user.username} />
               <span className="user-chip__copy">
                 <strong>{user.username}</strong>
-                <small>{isLead ? 'Governance Lead' : 'Team Member'}</small>
+                <small>{isOwner ? 'Stage 1 · Brand Owner' : isReviewer ? 'Stage 2 · Reviewer' : 'Stage 3 · Member'}</small>
               </span>
               <ChevronDown size={14} />
             </button>
@@ -250,21 +250,31 @@ export function Topbar({ onMenu, onNewReview, currentPath }) {
                 </div>
 
                 <div className="popover__role-switch">
-                  <span className="popover__role-label">Active Role:</span>
-                  <div className="role-switch-pills">
+                  <span className="popover__role-label">Governance Role:</span>
+                  <div className="role-switch-pills" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px' }}>
                     <button
                       type="button"
-                      className={cx('role-pill', !isLead && 'is-active')}
-                      onClick={() => switchRole('creator')}
+                      className={cx('role-pill', isOwner && 'is-active')}
+                      onClick={() => switchRole('owner')}
+                      title="Stage 1 · Full brand governance & sign-off"
                     >
-                      Team Member
+                      Owner
                     </button>
                     <button
                       type="button"
-                      className={cx('role-pill', isLead && 'is-active')}
-                      onClick={() => switchRole('lead')}
+                      className={cx('role-pill', isReviewer && 'is-active')}
+                      onClick={() => switchRole('reviewer')}
+                      title="Stage 2 · Compliance checking & feedback"
                     >
-                      Governance Lead
+                      Reviewer
+                    </button>
+                    <button
+                      type="button"
+                      className={cx('role-pill', isMember && 'is-active')}
+                      onClick={() => switchRole('member')}
+                      title="Stage 3 · Drafting & pre-flight checks"
+                    >
+                      Member
                     </button>
                   </div>
                 </div>
@@ -283,7 +293,7 @@ export function Topbar({ onMenu, onNewReview, currentPath }) {
                 </button>
                 <div className="popover__meta">
                   <span>Aster &amp; Oak</span>
-                  <span>{isLead ? 'Lead / Higher-up' : 'Team Member / Creator'}</span>
+                  <span>{isOwner ? '1. Brand Owner' : isReviewer ? '2. Reviewer' : '3. Team Member'}</span>
                 </div>
               </AnimatedPopover>
             ) : null}

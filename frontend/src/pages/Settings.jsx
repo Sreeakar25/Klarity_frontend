@@ -70,7 +70,7 @@ function ToggleRow({ label, description, checked, onChange }) {
 }
 
 export function Settings() {
-  const { toast, currentUser, user, isLead } = useApp()
+  const { toast, currentUser, user, isLead, isOwner, visibilitySettings, updateRoleVisibility } = useApp()
   const [settings, setSettings] = useState(defaultSettings)
   const [saved, setSaved] = useState(false)
   const [pendingAccounts, setPendingAccounts] = useState([])
@@ -150,6 +150,7 @@ export function Settings() {
           <a href="#review-defaults"><SlidersHorizontal size={15} /> Review defaults</a>
           <a href="#notifications"><Bell size={15} /> Notifications</a>
           <a href="#team"><Users size={15} /> Team</a>
+          <a href="#role-visibility"><ShieldAlert size={15} /> Role Viewability Matrix</a>
           <a href="#ai-disclosure"><ShieldCheck size={15} /> AI &amp; Confidentiality</a>
         </nav>
 
@@ -386,6 +387,140 @@ export function Settings() {
                 <strong>2. Reviewer:</strong> Audits submissions, verifies guideline evidence, and requests changes.<br />
                 <strong>3. Team Member:</strong> Drafts content, runs pre-flight checks, and submits pieces for review.
               </p>
+            </div>
+          </Panel>
+
+          <Panel className="settings-section" id="role-visibility">
+            <SectionHead
+              title="Role Viewability & Permission Governance"
+              description="Brand Owner controls: Determine exactly which screens, queues, and intelligence modules are visible to Reviewers (Admins) vs Team Members."
+              action={<ShieldAlert size={18} className="settings-section__icon" />}
+            />
+            <div style={{ marginBottom: '16px', padding: '12px 14px', background: 'var(--cream)', border: '1px solid var(--line)', borderRadius: 'var(--radius-sm)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <KeyRound size={16} color="var(--ink)" />
+                <span style={{ fontSize: '12.5px', color: 'var(--ink)' }}>
+                  <strong>Owner Power:</strong> You have absolute governance authority to toggle visibility. Toggles take effect live across workspace navigation and route access.
+                </span>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+              {/* Reviewer / Admin Visibility */}
+              <div style={{ background: '#fff', border: '1px solid var(--line)', borderRadius: '8px', padding: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--line)', paddingBottom: '10px', marginBottom: '12px' }}>
+                  <div>
+                    <strong style={{ fontSize: '13.5px', display: 'block', color: 'var(--ink)' }}>Stage 2 · Reviewer (Admin)</strong>
+                    <small style={{ color: 'var(--muted)', fontSize: '11px' }}>Compliance, audits &amp; approvals</small>
+                  </div>
+                  <span style={{ fontSize: '11px', background: 'var(--sage-soft)', color: 'var(--sage-deep)', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>Reviewer Access</span>
+                </div>
+                <div className="toggle-stack toggle-stack--flush">
+                  <ToggleRow
+                    label="Executive Overview"
+                    description="Access executive dashboard scores and volume metrics."
+                    checked={visibilitySettings?.admin?.overview ?? true}
+                    onChange={(val) => updateRoleVisibility('admin', 'overview', val)}
+                  />
+                  <ToggleRow
+                    label="Creator Studio"
+                    description="Allow direct access to authoring and pre-flight suite."
+                    checked={visibilitySettings?.admin?.studio ?? true}
+                    onChange={(val) => updateRoleVisibility('admin', 'studio', val)}
+                  />
+                  <ToggleRow
+                    label="Reviews Queue"
+                    description="Audit desk, filter all incoming pieces, and review history."
+                    checked={visibilitySettings?.admin?.reviews ?? true}
+                    onChange={(val) => updateRoleVisibility('admin', 'reviews', val)}
+                  />
+                  <ToggleRow
+                    label="Calendar"
+                    description="Content release and review schedule deadlines."
+                    checked={visibilitySettings?.admin?.calendar ?? true}
+                    onChange={(val) => updateRoleVisibility('admin', 'calendar', val)}
+                  />
+                  <ToggleRow
+                    label="Guidelines Library"
+                    description="Inspect and reference live brand rules."
+                    checked={visibilitySettings?.admin?.guidelines ?? true}
+                    onChange={(val) => updateRoleVisibility('admin', 'guidelines', val)}
+                  />
+                  <ToggleRow
+                    label="Brand Assets"
+                    description="Typography, palettes, logos, and approved tokens."
+                    checked={visibilitySettings?.admin?.assets ?? true}
+                    onChange={(val) => updateRoleVisibility('admin', 'assets', val)}
+                  />
+                  <ToggleRow
+                    label="Governance Insights"
+                    description="Heatmaps, issue distribution, and repeated violations."
+                    checked={visibilitySettings?.admin?.insights ?? true}
+                    onChange={(val) => updateRoleVisibility('admin', 'insights', val)}
+                  />
+                </div>
+              </div>
+
+              {/* Team Member Visibility */}
+              <div style={{ background: '#fff', border: '1px solid var(--line)', borderRadius: '8px', padding: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--line)', paddingBottom: '10px', marginBottom: '12px' }}>
+                  <div>
+                    <strong style={{ fontSize: '13.5px', display: 'block', color: 'var(--ink)' }}>Stage 3 · Team Member</strong>
+                    <small style={{ color: 'var(--muted)', fontSize: '11px' }}>Content authoring &amp; pre-flight checks</small>
+                  </div>
+                  <span style={{ fontSize: '11px', background: 'var(--cream)', color: 'var(--ink-soft)', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>Member Access</span>
+                </div>
+                <div className="toggle-stack toggle-stack--flush">
+                  <ToggleRow
+                    label="Personal Overview"
+                    description="View personal submission scorecard and progress."
+                    checked={visibilitySettings?.member?.overview ?? true}
+                    onChange={(val) => updateRoleVisibility('member', 'overview', val)}
+                  />
+                  <ToggleRow
+                    label="Creator Studio"
+                    description="Access Creator Studio editor and instant pre-flight checks."
+                    checked={visibilitySettings?.member?.studio ?? true}
+                    onChange={(val) => updateRoleVisibility('member', 'studio', val)}
+                  />
+                  <ToggleRow
+                    label="My Submissions Queue"
+                    description="View status and feedback on their own submitted pieces."
+                    checked={visibilitySettings?.member?.reviews ?? true}
+                    onChange={(val) => updateRoleVisibility('member', 'reviews', val)}
+                  />
+                  <ToggleRow
+                    label="Editorial Calendar"
+                    description="Visibility into upcoming launch deadlines and campaign dates."
+                    checked={visibilitySettings?.member?.calendar ?? false}
+                    onChange={(val) => updateRoleVisibility('member', 'calendar', val)}
+                  />
+                  <ToggleRow
+                    label="Guidelines Library"
+                    description="Reference brand guidelines for tone, lexicon, and claims."
+                    checked={visibilitySettings?.member?.guidelines ?? true}
+                    onChange={(val) => updateRoleVisibility('member', 'guidelines', val)}
+                  />
+                  <ToggleRow
+                    label="Brand Assets"
+                    description="Download approved logos, palette tokens, and typography."
+                    checked={visibilitySettings?.member?.assets ?? true}
+                    onChange={(val) => updateRoleVisibility('member', 'assets', val)}
+                  />
+                  <ToggleRow
+                    label="Governance Insights"
+                    description="Access high-level analytics, violation heatmaps, and trends."
+                    checked={visibilitySettings?.member?.insights ?? false}
+                    onChange={(val) => updateRoleVisibility('member', 'insights', val)}
+                  />
+                  <ToggleRow
+                    label="Workspace Settings"
+                    description="Allow team member to inspect workspace configuration."
+                    checked={visibilitySettings?.member?.settings ?? false}
+                    onChange={(val) => updateRoleVisibility('member', 'settings', val)}
+                  />
+                </div>
+              </div>
             </div>
           </Panel>
 

@@ -3,12 +3,45 @@ import { api } from '../lib/api'
 
 const AppContext = createContext(null)
 
+const DEFAULT_VISIBILITY = {
+  admin: {
+    overview: true,
+    studio: true,
+    reviews: true,
+    calendar: true,
+    guidelines: true,
+    assets: true,
+    insights: true,
+    settings: true,
+  },
+  member: {
+    overview: true,
+    studio: true,
+    reviews: true,       // personal submissions
+    calendar: false,
+    guidelines: true,
+    assets: true,
+    insights: false,
+    settings: false,
+  },
+}
+
+const VISIBILITY_STORAGE_KEY = 'klarity_role_visibility_matrix.v1'
+
 export function AppProvider({ children }) {
   const [user, setUser] = useState(null)
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [connected, setConnected] = useState(false)
-  const [currentRole, setCurrentRole] = useState(() => localStorage.getItem('klarity_role') || 'creator')
+  const [currentRole, setCurrentRole] = useState(() => localStorage.getItem('klarity_role') || 'owner')
+  const [visibilitySettings, setVisibilitySettings] = useState(() => {
+    try {
+      const stored = localStorage.getItem(VISIBILITY_STORAGE_KEY)
+      return stored ? { ...DEFAULT_VISIBILITY, ...JSON.parse(stored) } : DEFAULT_VISIBILITY
+    } catch {
+      return DEFAULT_VISIBILITY
+    }
+  })
   const [toasts, setToasts] = useState([])
   const timers = useRef(new Map())
   const toast = useCallback((message, tone = 'good') => {
@@ -77,17 +110,65 @@ export function AppProvider({ children }) {
   const switchRole = (newRole) => {
     setCurrentRole(newRole)
     localStorage.setItem('klarity_role', newRole)
-    toast(newRole === 'lead' ? 'Switched to Governance Lead (Higher-up)' : 'Switched to Employee / Team Member', 'good')
+    const roleLabels = {
+      owner: 'Stage 1 · Brand Owner (Executive Governance)',
+      reviewer: 'Stage 2 · Reviewer (Compliance Inspector)',
+      member: 'Stage 3 · Team Member (Creator Studio)',
+    }
+    toast(`Active Perspective: ${roleLabels[newRole] || newRole}`, 'good')
   }
 
-  const isLead = currentRole === 'lead'
+  const userAccountRole = (user?.role || 'owner').toLowerCase()
+  const activeRole = currentRole || userAccountRole
+
+  const isOwner = activeRole === 'owner' || activeRole === 'admin'
+  const isReviewer = activeRole === 'reviewer'
+  const isMember = activeRole === 'member' || activeRole === 'creator'
+  const isLead = isOwner || isReviewer
+
+  const updateRoleVisibility = (targetRole, moduleKey, isVisible) => {
+    if (!isOwner) {
+      toast('Only the Brand Owner can modify role visibility permissions.', 'warn')
+      return
+    }
+    setVisibilitySettings((prev) => {
+      const updated = {
+        ...prev,
+        [targetRole]: {
+          ...(prev[targetRole] || {}),
+          [moduleKey]: isVisible,
+        },
+      }
+      try {
+        localStorage.setItem(VISIBILITY_STORAGE_KEY, JSON.stringify(updated))
+      } catch {}
+      return updated
+    })
+    toast(`Updated ${targetRole} visibility for ${moduleKey}.`, 'good')
+  }
+
+  const canViewModule = (moduleKey) => {
+    if (isOwner) return true // Brand Owner has full executive visibility
+    if (isReviewer) {
+      // Reviewers inherit admin visibility matrix
+      return visibilitySettings.admin?.[moduleKey] ?? true
+    }
+    // Team member view matrix
+    return visibilitySettings.member?.[moduleKey] ?? false
+  }
 
   return <AppContext.Provider value={{
     user, data, loading, connected, toasts, toast, dismissToast, refresh, authenticate, logout,
     currentUser: user?.username || '',
-    currentRole,
+    currentRole: activeRole,
     switchRole,
+    isOwner,
+    isReviewer,
+    isMember,
     isLead,
+    visibilitySettings,
+    updateRoleVisibility,
+    canViewModule,
     createSubmission: payload => mutate(() => api.createSubmission(payload), 'Review complete. The report is ready.'),
     reviewSubmission: (id, action, comment) => mutate(() => api.reviewSubmission(id, {
       action, comment: comment || null, performed_by: user.username,

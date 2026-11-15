@@ -148,11 +148,6 @@ export function Hero() {
       {/* Main Masthead */}
       <section className="hero-masthead">
         <div className="hero-container hero-masthead__content">
-          <div className="hero-tagline">
-            <span className="hero-tagline__dot" aria-hidden="true" />
-            <span>Brand Intelligence &amp; Editorial Verification</span>
-          </div>
-
           <h1 className="hero-title">
             Brand rules that live inside the work, <br className="hero-title__br" />
             not in an 80-page PDF<span className="hero-accent">.</span>
@@ -172,23 +167,6 @@ export function Hero() {
               <BookOpen size={16} />
               <span>Explore Guidelines</span>
             </Link>
-          </div>
-
-          <div className="hero-proof-strip">
-            <div className="hero-proof-item">
-              <CheckCircle2 size={14} />
-              <span>Live Tone &amp; Lexicon Verification</span>
-            </div>
-            <span className="hero-proof-divider" />
-            <div className="hero-proof-item">
-              <CheckCircle2 size={14} />
-              <span>ESG &amp; Legal Claim Substantiation</span>
-            </div>
-            <span className="hero-proof-divider" />
-            <div className="hero-proof-item">
-              <CheckCircle2 size={14} />
-              <span>Token-Bound Palette &amp; Specimen Rules</span>
-            </div>
           </div>
         </div>
 
