@@ -265,24 +265,21 @@ function CampaignPlate({ variant = 1 }) {
 
 function SocialPlate() {
   return (
-    <svg viewBox="0 0 240 300" className="asset-svg" role="img" aria-label="Social template">
-      <rect width="240" height="300" fill="#3B2418" />
-      <circle cx="168" cy="100" r="74" fill="#298EE4" />
-      <path d="M0 232c48-38 91-48 128-30 32 16 68 19 112 6v92H0v-68Z" fill="#F6F1E6" />
-      <text x="22" y="52" fill="#F6F1E6" className="asset-svg__caption asset-svg__caption--light">
+    <svg viewBox="0 0 320 200" className="asset-svg" role="img" aria-label="Social template">
+      <rect width="320" height="200" fill="#3B2418" />
+      <circle cx="236" cy="74" r="58" fill="#298EE4" />
+      <path d="M0 152c64-28 122-34 172-20 42 12 90 14 148 4v64H0v-48Z" fill="#F6F1E6" />
+      <text x="24" y="38" fill="#F6F1E6" className="asset-svg__caption asset-svg__caption--light">
         @ASTERANDOAK
       </text>
-      <text x="22" y="196" fill="#F6F1E6" className="asset-svg__campaign asset-svg__campaign--social">
+      <text x="24" y="96" fill="#F6F1E6" className="asset-svg__campaign asset-svg__campaign--social">
         Keep
       </text>
-      <text x="22" y="220" fill="#F6F1E6" className="asset-svg__campaign asset-svg__campaign--social">
-        the good
+      <text x="24" y="122" fill="#F6F1E6" className="asset-svg__campaign asset-svg__campaign--social">
+        the good things.
       </text>
-      <text x="22" y="244" fill="#F6F1E6" className="asset-svg__campaign asset-svg__campaign--social">
-        things.
-      </text>
-      <text x="22" y="282" fill="#3B2418" className="asset-svg__caption">
-        4:5 · STORY TEMPLATE
+      <text x="24" y="180" fill="#3B2418" className="asset-svg__caption">
+        STORY TEMPLATE · 16:10 PREVIEW
       </text>
     </svg>
   )
@@ -984,7 +981,7 @@ export function Assets() {
             <button
               key={asset.id}
               type="button"
-              className={cx('asset-card', asset.kind === 'campaign' && 'asset-card--campaign', asset.plateType === 'social' && 'asset-card--social')}
+              className={cx('asset-card', asset.kind === 'campaign' && 'asset-card--campaign')}
               onClick={() => handleOpenAsset(asset)}
             >
               <span className="asset-card__preview">{renderAssetPreview(asset, false)}</span>

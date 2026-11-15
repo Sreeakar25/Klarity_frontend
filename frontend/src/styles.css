@@ -5197,6 +5197,7 @@ kbd {
 .asset-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(242px, 1fr));
+  align-items: start;
   gap: 16px;
 }
 
@@ -5211,11 +5212,6 @@ kbd {
   text-align: left;
   box-shadow: var(--shadow-sm);
   transition: transform 200ms var(--ease-out), box-shadow 200ms var(--ease-out), border-color 200ms var(--ease-out);
-}
-
-.asset-card--social {
-  grid-column: -2 / -1;
-  order: 99;
 }
 
 .asset-card:hover {
