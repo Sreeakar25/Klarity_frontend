@@ -51,7 +51,7 @@ import {
   parseSwatchesFromText,
 } from '../lib/colorUtils'
 
-const STORAGE_KEY = 'klarity_brand_assets_v2'
+const STORAGE_KEY = 'klarity_brand_assets_v3'
 
 const swatches = [
   { name: 'Cream', hex: '#F6F1E6', role: 'Background' },
@@ -984,7 +984,7 @@ export function Assets() {
             <button
               key={asset.id}
               type="button"
-              className={cx('asset-card', asset.kind === 'campaign' && 'asset-card--campaign')}
+              className={cx('asset-card', asset.kind === 'campaign' && 'asset-card--campaign', asset.plateType === 'social' && 'asset-card--social')}
               onClick={() => handleOpenAsset(asset)}
             >
               <span className="asset-card__preview">{renderAssetPreview(asset, false)}</span>

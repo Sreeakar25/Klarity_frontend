@@ -5213,6 +5213,11 @@ kbd {
   transition: transform 200ms var(--ease-out), box-shadow 200ms var(--ease-out), border-color 200ms var(--ease-out);
 }
 
+.asset-card--social {
+  grid-column: -2 / -1;
+  order: 99;
+}
+
 .asset-card:hover {
   transform: translateY(-3px);
   border-color: var(--line-strong);
