@@ -104,50 +104,75 @@ export function DynamicPalettePlate({ swatches: inputSwatches = [], title = 'COL
   const width = 320
   const height = 200
   const padding = 16
-  const gap = 8
+  const gap = count > 5 ? 6 : 8
   const availableWidth = width - padding * 2 - (count - 1) * gap
-  const chipWidth = Math.max(38, Math.floor(availableWidth / count))
+  const chipWidth = Math.max(30, Math.floor(availableWidth / count))
+  const chipHeight = 88
+  const chipY = 30
 
   return (
     <svg viewBox={`0 0 ${width} ${height}`} className="asset-svg" role="img" aria-label={title}>
       <rect width={width} height={height} fill="#FBF8F1" />
       {displaySwatches.map((swatch, index) => {
         const x = padding + index * (chipWidth + gap)
+        const centerX = x + chipWidth / 2
+        const maxChars = count > 5 ? 7 : count > 4 ? 9 : 12
+        const displayName = swatch.name
+          ? swatch.name.length > maxChars
+            ? `${swatch.name.slice(0, maxChars - 1)}…`
+            : swatch.name
+          : `Token ${index + 1}`
+
         return (
           <g key={`${swatch.hex}-${index}`}>
             <rect
               x={x}
-              y={32}
+              y={chipY}
               width={chipWidth}
-              height={94}
+              height={chipHeight}
               rx={6}
               fill={swatch.hex}
-              stroke="rgba(0,0,0,0.08)"
+              stroke="rgba(32, 21, 15, 0.12)"
               strokeWidth={1}
             />
             <text
-              x={x}
-              y={145}
+              x={centerX}
+              y={chipY + chipHeight + 17}
+              textAnchor="middle"
               fill="#5F675C"
               className="asset-svg__caption"
-              style={{ fontSize: count > 4 ? '8.5px' : '10px' }}
+              style={{
+                fontSize: count > 5 ? '8px' : count > 4 ? '8.5px' : '9.5px',
+                fontWeight: 600,
+              }}
             >
-              {swatch.name ? swatch.name.slice(0, 11) : 'Token'}
+              {displayName}
             </text>
             <text
-              x={x}
-              y={159}
-              fill="#3B2418"
+              x={centerX}
+              y={chipY + chipHeight + 30}
+              textAnchor="middle"
+              fill="#20150F"
               className="asset-svg__hex"
-              style={{ fontSize: count > 4 ? '8px' : '9.5px', fontWeight: 700 }}
+              style={{
+                fontSize: count > 5 ? '7.5px' : count > 4 ? '8px' : '9px',
+                fontFamily: 'monospace',
+                fontWeight: 700,
+              }}
             >
               {swatch.hex}
             </text>
           </g>
         )
       })}
-      <text x={padding} y={186} fill="#5F675C" className="asset-svg__caption">
-        {title.toUpperCase()} · {count} TOKENS
+      <text
+        x={padding}
+        y={186}
+        fill="#5F675C"
+        className="asset-svg__caption"
+        style={{ fontSize: '8.5px', letterSpacing: '0.06em', textTransform: 'uppercase' }}
+      >
+        {title.toUpperCase()} · {count} {count === 1 ? 'TOKEN' : 'TOKENS'}
       </text>
     </svg>
   )
@@ -1041,7 +1066,7 @@ export function Assets() {
         }}
         title="Upload new brand asset"
         description="Add a logo, campaign plate, typography specimen, or color palette to the workspace library."
-        width="560px"
+        width="620px"
         footer={
           <div className="drawer__actions drawer__actions--between">
             <Button
@@ -1125,6 +1150,13 @@ export function Assets() {
 
               {paletteTab === 'builder' && (
                 <div className="palette-builder-pane">
+                  <div className="palette-swatches-header">
+                    <span>Color</span>
+                    <span>Hex</span>
+                    <span>Token Name</span>
+                    <span>Role / Usage</span>
+                    <span aria-hidden="true" />
+                  </div>
                   <div className="palette-swatches-list">
                     {paletteSwatches.map((swatch, idx) => (
                       <div key={idx} className="palette-swatch-row">
@@ -1135,6 +1167,7 @@ export function Assets() {
                         >
                           <input
                             type="color"
+                            aria-label={`Color picker for ${swatch.name || 'token'}`}
                             value={normalizeHex(swatch.hex) || '#298EE4'}
                             onChange={(e) => handleUpdateSwatch(idx, 'hex', e.target.value.toUpperCase())}
                           />
@@ -1146,6 +1179,7 @@ export function Assets() {
                           onChange={(e) => handleUpdateSwatch(idx, 'hex', e.target.value)}
                           placeholder="#298EE4"
                           maxLength={7}
+                          aria-label="Hex color code"
                         />
                         <input
                           type="text"
@@ -1153,13 +1187,15 @@ export function Assets() {
                           value={swatch.name}
                           onChange={(e) => handleUpdateSwatch(idx, 'name', e.target.value)}
                           placeholder="Color name"
+                          aria-label="Token name"
                         />
                         <input
                           type="text"
                           className="palette-swatch-input"
                           value={swatch.role}
                           onChange={(e) => handleUpdateSwatch(idx, 'role', e.target.value)}
-                          placeholder="Token role (e.g. Primary)"
+                          placeholder="Role (e.g. Primary)"
+                          aria-label="Token role"
                         />
                         <button
                           type="button"
@@ -1167,6 +1203,7 @@ export function Assets() {
                           disabled={paletteSwatches.length <= 1}
                           onClick={() => handleRemoveSwatch(idx)}
                           title="Remove swatch"
+                          aria-label={`Remove swatch ${swatch.name || idx + 1}`}
                         >
                           <Trash2 size={13} />
                         </button>
@@ -1186,7 +1223,7 @@ export function Assets() {
                     </Button>
 
                     <div className="palette-studio__presets">
-                      <span style={{ fontSize: '11px', color: 'var(--muted)' }}>Presets:</span>
+                      <span className="palette-studio__presets-label">Presets:</span>
                       <button
                         type="button"
                         className="palette-studio__preset-tag"
@@ -1306,18 +1343,11 @@ export function Assets() {
               )}
 
               {/* Live Preview Plate */}
-              <div style={{ marginTop: '4px' }}>
-                <span
-                  style={{
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    color: 'var(--muted)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.04em',
-                  }}
-                >
-                  Live Plate Preview
-                </span>
+              <div className="palette-live-preview-wrap">
+                <div className="palette-live-preview__header">
+                  <span className="palette-live-preview__title">Live Plate Preview</span>
+                  <span className="palette-live-preview__meta">{paletteSwatches.length} tokens defined</span>
+                </div>
                 <div className="palette-live-preview">
                   <DynamicPalettePlate
                     swatches={paletteSwatches}
@@ -1503,7 +1533,15 @@ export function Assets() {
                     </div>
                   </div>
 
-                  <div className="palette-swatches-list">
+                  <div className="palette-builder-pane">
+                    <div className="palette-swatches-header">
+                      <span>Color</span>
+                      <span>Hex</span>
+                      <span>Token Name</span>
+                      <span>Role / Usage</span>
+                      <span aria-hidden="true" />
+                    </div>
+                    <div className="palette-swatches-list">
                     {editSwatches.map((swatch, idx) => (
                       <div key={idx} className="palette-swatch-row">
                         <div
@@ -1578,6 +1616,9 @@ export function Assets() {
                         </button>
                       </div>
                     ))}
+                  </div>
+
+                  <div className="palette-studio__actions">
                     <Button
                       type="button"
                       variant="secondary"
@@ -1588,12 +1629,13 @@ export function Assets() {
                           { name: 'New Token', hex: '#298EE4', role: 'Accent' },
                         ])
                       }
-                      style={{ height: '30px', fontSize: '12px', marginTop: '4px' }}
+                      style={{ height: '30px', fontSize: '12px' }}
                     >
                       Add color swatch
                     </Button>
                   </div>
                 </div>
+              </div>
               ) : (
                 /* Replace file area for image assets */
                 <div
