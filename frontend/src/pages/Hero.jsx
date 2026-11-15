@@ -1,31 +1,123 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import gsap from 'gsap'
 import {
   ArrowRight,
   BookOpen,
+  Check,
+  CheckCircle2,
   ChevronRight,
-  Clock,
-  ExternalLink,
-  Eye,
   FileCheck2,
   FileText,
-  Lock,
-  Play,
+  Layers,
   RotateCcw,
   Scale,
-  Shield,
+  ShieldCheck,
+  SlidersHorizontal,
   Sparkles,
 } from 'lucide-react'
 import { BrandMark } from '../components/BrandMark'
-import { AnimatedValue } from '../components/AnimatedValue'
 
 export function Hero() {
   const navigate = useNavigate()
-  const [fixedTerm, setFixedTerm] = useState(false)
-  const [activeTab, setActiveTab] = useState('review')
+  const heroRef = useRef(null)
+  const [applied, setApplied] = useState(false)
+  const [scoreDisplay, setScoreDisplay] = useState(84)
+  const scoreObj = useRef({ val: 84 })
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
+
+      tl.from('.hero-tagline', {
+        opacity: 0,
+        y: -10,
+        duration: 0.5,
+      })
+        .from(
+          '.hero-title',
+          {
+            opacity: 0,
+            y: 20,
+            duration: 0.7,
+          },
+          '-=0.3'
+        )
+        .from(
+          '.hero-subtitle',
+          {
+            opacity: 0,
+            y: 16,
+            duration: 0.6,
+          },
+          '-=0.4'
+        )
+        .from(
+          '.hero-cta-group',
+          {
+            opacity: 0,
+            y: 12,
+            duration: 0.5,
+          },
+          '-=0.4'
+        )
+        .from(
+          '.hero-proof-strip',
+          {
+            opacity: 0,
+            y: 10,
+            duration: 0.4,
+          },
+          '-=0.3'
+        )
+        .from(
+          '.hero-plate',
+          {
+            opacity: 0,
+            y: 28,
+            scale: 0.985,
+            duration: 0.8,
+          },
+          '-=0.2'
+        )
+        .from(
+          '.hero-pillar-card',
+          {
+            opacity: 0,
+            y: 20,
+            duration: 0.6,
+            stagger: 0.12,
+          },
+          '-=0.3'
+        )
+    }, heroRef)
+
+    return () => ctx.revert()
+  }, [])
+
+  const handleToggle = () => {
+    const nextState = !applied
+    setApplied(nextState)
+    const targetScore = nextState ? 98 : 84
+
+    gsap.to(scoreObj.current, {
+      val: targetScore,
+      duration: 0.6,
+      ease: 'power2.out',
+      onUpdate: () => {
+        setScoreDisplay(Math.round(scoreObj.current.val))
+      },
+    })
+
+    gsap.fromTo(
+      '.hero-plate__content-box',
+      { backgroundColor: nextState ? 'rgba(41, 142, 228, 0.04)' : 'rgba(184, 91, 53, 0.04)' },
+      { backgroundColor: 'var(--paper)', duration: 0.5, ease: 'power2.out' }
+    )
+  }
 
   return (
-    <div className="hero-page">
+    <div className="hero-page" ref={heroRef}>
       {/* Top Navigation */}
       <header className="hero-nav">
         <div className="hero-nav__inner">
@@ -33,102 +125,140 @@ export function Hero() {
             <BrandMark size={32} />
             <div className="hero-brand__copy">
               <span className="hero-brand__name">Klarity</span>
+              <span className="hero-brand__label">Editorial Brand Intelligence</span>
             </div>
           </Link>
 
           <nav className="hero-nav__links">
-            <a href="#features">Features</a>
-            <a href="#demo">Live Demo</a>
-            <a href="#governance">Governance</a>
-            <a href="#metrics">Impact</a>
+            <a href="#proof-desk">Review Desk</a>
+            <a href="#pillars">Architecture</a>
+            <Link to="/guidelines">Guidelines</Link>
+            <Link to="/assets">Assets</Link>
           </nav>
 
-
+          <div className="hero-nav__actions">
+            <Link to="/reviews" className="hero-btn hero-btn--sm hero-btn--primary">
+              <span>Open Workspace</span>
+              <ArrowRight size={14} />
+            </Link>
+          </div>
         </div>
       </header>
 
-      {/* Main Hero Header */}
+      {/* Main Masthead */}
       <section className="hero-masthead">
-        <div className="hero-masthead__glow" aria-hidden="true" />
         <div className="hero-container hero-masthead__content">
+          <div className="hero-tagline">
+            <span className="hero-tagline__dot" aria-hidden="true" />
+            <span>Brand Intelligence &amp; Editorial Verification</span>
+          </div>
+
           <h1 className="hero-title">
-            Professional Brand Intelligence <br className="hero-title__br" />
-            for Modern Enterprises<span className="hero-accent">.</span>
+            Brand rules that live inside the work, <br className="hero-title__br" />
+            not in an 80-page PDF<span className="hero-accent">.</span>
           </h1>
 
           <p className="hero-subtitle">
-            Autonomous brand governance that eliminates voice drift before it publishes.
-            Real-time copy auditing, visual asset compliance, and approved lexicon enforcement
-            across every marketing touchpoint.
+            Klarity evaluates copy, digital surfaces, and creative assets against live guidelines before
+            publishing. Line-by-line inspection, verified claim substantiation, and token-bound design fidelity.
           </p>
+
+          <div className="hero-cta-group">
+            <a href="#proof-desk" className="hero-btn hero-btn--lg hero-btn--primary">
+              <span>Inspect Live Proof Desk</span>
+              <ArrowRight size={16} />
+            </a>
+            <Link to="/guidelines" className="hero-btn hero-btn--lg hero-btn--secondary">
+              <BookOpen size={16} />
+              <span>Explore Guidelines</span>
+            </Link>
+          </div>
+
+          <div className="hero-proof-strip">
+            <div className="hero-proof-item">
+              <CheckCircle2 size={14} />
+              <span>Live Tone &amp; Lexicon Verification</span>
+            </div>
+            <span className="hero-proof-divider" />
+            <div className="hero-proof-item">
+              <CheckCircle2 size={14} />
+              <span>ESG &amp; Legal Claim Substantiation</span>
+            </div>
+            <span className="hero-proof-divider" />
+            <div className="hero-proof-item">
+              <CheckCircle2 size={14} />
+              <span>Token-Bound Palette &amp; Specimen Rules</span>
+            </div>
+          </div>
         </div>
 
-        {/* Live Interactive Product Plate (Stitch Mockup) */}
-        <div className="hero-container hero-plate-container" id="demo">
+        {/* Centerpiece: Real Editorial Proof Desk */}
+        <div className="hero-container hero-plate-container" id="proof-desk">
           <div className="hero-plate">
             <div className="hero-plate__topbar">
-              <div className="hero-plate__dots">
-                <span />
-                <span />
-                <span />
+              <div className="hero-plate__doc-info">
+                <FileText size={15} />
+                <span className="hero-plate__doc-title">Aster &amp; Oak · Spring Collection Launch Plate</span>
+                <span className="hero-plate__doc-channel">Web Editorial · v1.4</span>
               </div>
-              <div className="hero-plate__url">
-                <Lock size={11} />
-                <span>klarity.ai/workspace/aster-oak/review-desk</span>
-              </div>
-              <div className="hero-plate__status">
-                <span className="hero-plate__status-dot" />
-                <span>AI Governance Engine Active</span>
+
+              <div className="hero-plate__topbar-right">
+                <button
+                  type="button"
+                  className={`hero-plate__toggle-btn ${applied ? 'hero-plate__toggle-btn--active' : ''}`}
+                  onClick={handleToggle}
+                  aria-pressed={applied}
+                >
+                  <RotateCcw size={13} />
+                  <span>{applied ? 'Revert to Flagged Draft' : 'Apply Guideline Rules'}</span>
+                </button>
               </div>
             </div>
 
             <div className="hero-plate__body">
-              {/* Left: Copy Audit Interactive Pane */}
+              {/* Left Pane: Copy Specimen */}
               <div className="hero-plate__editor">
                 <div className="hero-plate__pane-head">
-                  <div className="hero-plate__pane-title">
-                    <FileText size={15} />
-                    <strong>Spring Campaign Launch Plate</strong>
-                    <span className="hero-plate__tag">v1.4 draft</span>
+                  <div className="hero-plate__pane-meta">
+                    <span className="hero-plate__channel-indicator">Draft Copy Specimen</span>
+                    <span className="hero-plate__meta-tags">
+                      {applied ? '✓ 0 issues detected' : '⚠️ 2 issues flagged'}
+                    </span>
                   </div>
-                  <button
-                    type="button"
-                    className="hero-plate__reset-btn"
-                    onClick={() => setFixedTerm((v) => !v)}
-                  >
-                    <RotateCcw size={13} />
-                    <span>{fixedTerm ? 'Reset Sample' : 'Auto-Fix With Lexicon'}</span>
-                  </button>
+                  <div className="hero-plate__legend">
+                    <span className="hero-legend-dot hero-legend-dot--warn" /> Flagged Buzzword
+                    <span className="hero-legend-dot hero-legend-dot--danger" /> Unverified Claim
+                  </div>
                 </div>
 
                 <div className="hero-plate__content-box">
                   <p>
-                     Aster &amp; Oak creates thoughtful homeware with an organic sage aesthetic. Our
+                    Aster &amp; Oak creates thoughtful homeware with an organic sage aesthetic. Our
                     new collection delivers{' '}
-                    {fixedTerm ? (
+                    {applied ? (
                       <mark className="hero-highlight hero-highlight--approved">
                         effortless cohesion
-                        <span className="hero-tooltip">✓ Approved replacement for buzzword</span>
+                        <span className="hero-tooltip">✓ Approved: Aster &amp; Oak Calm Tone spec</span>
                       </mark>
                     ) : (
                       <mark className="hero-highlight hero-highlight--warn">
                         seamless
-                        <span className="hero-tooltip">⚠️ Flagged term: overused buzzword (90d max: 12)</span>
+                        <span className="hero-tooltip">⚠️ Flagged: Overused buzzword per Voice Guide §3.1</span>
                       </mark>
                     )}{' '}
                     craftsmanship across both digital and physical living environments.
                   </p>
                   <p>
                     Every vessel is fired in small batches to maintain{' '}
-                    {fixedTerm ? (
+                    {applied ? (
                       <mark className="hero-highlight hero-highlight--approved">
-                        responsibly sourced
-                        <span className="hero-tooltip">✓ Verified claim with documentation</span>
+                        responsibly sourced and documented
+                        <span className="hero-tooltip">✓ Approved: Verified claim against FSC Certificate #2026-B</span>
                       </mark>
                     ) : (
                       <mark className="hero-highlight hero-highlight--danger">
                         eco-friendly
-                        <span className="hero-tooltip">🚫 Unsubstantiated ESG claim (legal requirement #14)</span>
+                        <span className="hero-tooltip">🚫 Flagged: Unsubstantiated ESG claim per legal guide</span>
                       </mark>
                     )}{' '}
                     integrity without compromise.
@@ -137,65 +267,80 @@ export function Hero() {
 
                 <div className="hero-plate__editor-foot">
                   <div className="hero-plate__word-count">
-                    <span>Word count: 54 words</span>
+                    <span>Length: 54 words</span>
                     <span>·</span>
                     <span>Reading time: 14 sec</span>
+                    <span>·</span>
+                    <span>Target Tone: Calm &amp; Grounded</span>
                   </div>
                   <div className="hero-plate__audit-pills">
-                    <span className="hero-audit-pill hero-audit-pill--good">Tone: 94% Calm</span>
-                    <span className="hero-audit-pill hero-audit-pill--clay">
-                      {fixedTerm ? '0 Warnings' : '2 Warnings'}
+                    <span className="hero-audit-pill hero-audit-pill--good">Tone: 98% Consistent</span>
+                    <span
+                      className={`hero-audit-pill ${applied ? 'hero-audit-pill--good' : 'hero-audit-pill--clay'}`}
+                    >
+                      {applied ? 'All Checks Passed' : '2 Flags Pending'}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Right: Live Intelligence Sidebar */}
+              {/* Right Pane: Review Intelligence Desk */}
               <div className="hero-plate__sidebar">
                 <div className="hero-plate__score-card">
-                  <span className="hero-score-label">Brand Health Score</span>
+                  <div className="hero-score-header">
+                    <span className="hero-score-label">Brand Compliance Index</span>
+                    <span className={`hero-score-badge ${applied ? 'hero-score-badge--good' : 'hero-score-badge--clay'}`}>
+                      {applied ? 'Approved to Publish' : 'Action Required'}
+                    </span>
+                  </div>
+
                   <div className="hero-score-num">
-                    <AnimatedValue value={fixedTerm ? 96 : 84} />
+                    <span>{scoreDisplay}</span>
                     <small>/100</small>
                   </div>
+
                   <div className="hero-score-bar">
                     <div
                       className="hero-score-bar__fill"
-                      style={{ width: `${fixedTerm ? 96 : 84}%` }}
+                      style={{
+                        width: `${scoreDisplay}%`,
+                        backgroundColor: applied ? 'var(--good)' : 'var(--clay)',
+                      }}
                     />
                   </div>
+
                   <p className="hero-score-note">
-                    {fixedTerm
-                      ? '✨ 100% compliant with Aster & Oak voice guidelines.'
-                      : '2 terms require team sign-off before publishing.'}
+                    {applied
+                      ? 'All voice, terminology, and legal claims meet Aster & Oak guidelines.'
+                      : '2 terms require editorial adjustments before publishing.'}
                   </p>
                 </div>
 
                 <div className="hero-plate__rules">
-                  <span className="hero-rules-head">Category Breakdown</span>
+                  <span className="hero-rules-head">Evaluation Breakdown</span>
                   <div className="hero-rule-row">
-                    <span>Voice &amp; Tone</span>
+                    <span>Voice &amp; Tone Register</span>
                     <strong className="text-good">98%</strong>
                   </div>
                   <div className="hero-rule-row">
-                    <span>Terminology</span>
-                    <strong className={fixedTerm ? 'text-good' : 'text-clay'}>
-                      {fixedTerm ? '96%' : '74%'}
+                    <span>Approved Lexicon</span>
+                    <strong className={applied ? 'text-good' : 'text-clay'}>
+                      {applied ? '99%' : '74%'}
                     </strong>
                   </div>
                   <div className="hero-rule-row">
-                    <span>ESG &amp; Legal</span>
-                    <strong className={fixedTerm ? 'text-good' : 'text-danger'}>
-                      {fixedTerm ? '95%' : '68%'}
+                    <span>ESG Claim Substantiation</span>
+                    <strong className={applied ? 'text-good' : 'text-danger'}>
+                      {applied ? '100%' : '65%'}
                     </strong>
                   </div>
                   <div className="hero-rule-row">
-                    <span>Visual Consistency</span>
-                    <strong className="text-good">99%</strong>
+                    <span>Visual Asset Tokens</span>
+                    <strong className="text-good">100%</strong>
                   </div>
                 </div>
 
-                <Link to="/" className="hero-plate__cta">
+                <Link to="/reviews" className="hero-plate__cta">
                   <span>Open Full Review Desk</span>
                   <ChevronRight size={15} />
                 </Link>
@@ -205,166 +350,104 @@ export function Hero() {
         </div>
       </section>
 
-      {/* Metrics Section */}
-      <section className="hero-metrics-section" id="metrics">
-        <div className="hero-container">
-          <div className="hero-metrics-grid">
-            <div className="hero-metric-card">
-              <span className="hero-metric-number">
-                <AnimatedValue value={85} suffix="%" />
-              </span>
-              <strong className="hero-metric-title">Faster Review Velocity</strong>
-              <p className="hero-metric-desc">
-                Reduce manual compliance reviews from days to minutes with continuous background auditing.
-              </p>
-            </div>
-
-            <div className="hero-metric-card">
-              <span className="hero-metric-number">
-                <AnimatedValue value={14} suffix="k+" />
-              </span>
-              <strong className="hero-metric-title">Pieces Governed</strong>
-              <p className="hero-metric-desc">
-                High-volume social, web, email, and packaging assets validated with zero drift.
-              </p>
-            </div>
-
-            <div className="hero-metric-card">
-              <span className="hero-metric-number">
-                <AnimatedValue value={99} suffix=".4%" />
-              </span>
-              <strong className="hero-metric-title">Lexicon Fidelity</strong>
-              <p className="hero-metric-desc">
-                Consistently enforce approved terminology, banned buzzwords, and legal disclaimers.
-              </p>
-            </div>
-
-            <div className="hero-metric-card">
-              <span className="hero-metric-number">
-                <AnimatedValue value={0} />
-              </span>
-              <strong className="hero-metric-title">Stale Assets in Prod</strong>
-              <p className="hero-metric-desc">
-                Centralized token library prevents outdated logos, deprecated palettes, and old slogans.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Bento Features Section */}
-      <section className="hero-features-section" id="features">
+      {/* Three Architectural Pillars */}
+      <section className="hero-pillars-section" id="pillars">
         <div className="hero-container">
           <div className="hero-section-head">
-            <span className="hero-section-pill">Intelligence Stack</span>
-            <h2 className="hero-section-title">Built for Calm, Certain Brand Governance</h2>
+            <span className="hero-section-pill">How Klarity Works</span>
+            <h2 className="hero-section-title">A Living Standard, Not a Shelf Document</h2>
             <p className="hero-section-sub">
-              Everything your brand, creative, and legal teams need to move fast without losing control.
+              Most brand guidelines sit forgotten in static presentations. Klarity puts rules directly into
+              the publishing workflow where copy, images, and surfaces are created.
             </p>
           </div>
 
-          <div className="hero-bento-grid">
-            <div className="hero-bento-card hero-bento-card--large">
-              <div className="hero-bento-icon">
-                <Shield size={24} />
+          <div className="hero-pillars-grid">
+            <div className="hero-pillar-card">
+              <div className="hero-pillar-icon">
+                <BookOpen size={22} />
               </div>
-              <h3>Autonomous Voice Guardrails</h3>
+              <h3>Living Guidelines</h3>
               <p>
-                Continuous natural language auditing detects off-brand adjectives, passive sentence
-                structures, and rogue marketing speak before work reaches creative leadership.
+                Define tone parameters, banned jargon, approved phrasing, and mandatory legal disclosures.
+                When guidelines evolve, every desk and automated check updates instantly.
               </p>
-              <div className="hero-bento-visual hero-bento-visual--tags">
-                <span className="bento-tag bento-tag--good">✓ Calm &amp; Considered</span>
-                <span className="bento-tag bento-tag--good">✓ Editorial Warmth</span>
-                <span className="bento-tag bento-tag--bad">✕ Hyperbolic claims</span>
-                <span className="bento-tag bento-tag--bad">✕ Unverified jargon</span>
-              </div>
+              <Link to="/guidelines" className="hero-pillar-link">
+                <span>View Guidelines Spec</span>
+                <ArrowRight size={14} />
+              </Link>
             </div>
 
-            <div className="hero-bento-card">
-              <div className="hero-bento-icon">
-                <BookOpen size={24} />
+            <div className="hero-pillar-card">
+              <div className="hero-pillar-icon">
+                <Scale size={22} />
               </div>
-              <h3>Live Brand Guidelines</h3>
+              <h3>Line-by-Line Review Desk</h3>
               <p>
-                Interactive, machine-readable rule sets that live directly in the reviewer's flow.
-                No 80-page static PDFs lost in Drive.
+                Triage submitted campaign copy, press plates, and website launches. Automated scans highlight
+                unsubstantiated claims and voice drift with clear rationale and replacement suggestions.
               </p>
+              <Link to="/reviews" className="hero-pillar-link">
+                <span>Explore Review Queue</span>
+                <ArrowRight size={14} />
+              </Link>
             </div>
 
-            <div className="hero-bento-card">
-              <div className="hero-bento-icon">
-                <FileCheck2 size={24} />
+            <div className="hero-pillar-card">
+              <div className="hero-pillar-icon">
+                <Layers size={22} />
               </div>
-              <h3>Live Asset Previews</h3>
+              <h3>Token-Bound Brand Assets</h3>
               <p>
-                Direct token binding for SVG campaign plates, typography lockups, and social templates.
-                Always verified against source hexes.
+                Verify color hex codes, SVG typography marks, and campaign templates against single-source tokens.
+                Eliminates stale logos and unapproved palette variations across channels.
               </p>
-            </div>
-
-            <div className="hero-bento-card hero-bento-card--large">
-              <div className="hero-bento-icon">
-                <Scale size={24} />
-              </div>
-              <h3>Automated Review Desk &amp; Sign-Offs</h3>
-              <p>
-                Triage incoming submissions, assign severity tags (blocking, warning, note), and export
-                annotated brand audit reports with one click.
-              </p>
-              <div className="hero-bento-visual hero-bento-visual--stats">
-                <div className="bento-stat">
-                  <strong>12 min</strong>
-                  <span>Avg turnaround</span>
-                </div>
-                <div className="bento-stat">
-                  <strong>100%</strong>
-                  <span>Audit trail logged</span>
-                </div>
-                <div className="bento-stat">
-                  <strong>REST API</strong>
-                  <span>Seamless CI/CD</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Bottom CTA Banner */}
-      <section className="hero-bottom-cta">
-        <div className="hero-container">
-          <div className="hero-cta-box">
-            <BrandMark size={48} />
-            <h2>Ready to Elevate Your Brand Governance?</h2>
-            <p>
-              Experience Klarity’s calm editorial review desk. Explore the interactive workspace
-              or connect with your enterprise team.
-            </p>
-            <div className="hero-cta-buttons">
-              <Link to="/login" className="hero-btn hero-btn--lg hero-btn--primary">
-                <Lock size={16} />
-                <span>Enterprise Sign In</span>
-                <ArrowRight size={17} />
+              <Link to="/assets" className="hero-pillar-link">
+                <span>Inspect Asset Tokens</span>
+                <ArrowRight size={14} />
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
+      {/* Grounded Call to Action */}
+      <section className="hero-bottom-cta">
+        <div className="hero-container">
+          <div className="hero-cta-box">
+            <BrandMark size={40} />
+            <h2>Bring Discipline to Every Brand Touchpoint</h2>
+            <p>
+              Explore the Aster &amp; Oak workspace to see how live guidelines and automated reviews
+              maintain editorial excellence.
+            </p>
+            <div className="hero-cta-buttons">
+              <Link to="/reviews" className="hero-btn hero-btn--lg hero-btn--primary">
+                <span>Open Review Desk</span>
+                <ArrowRight size={16} />
+              </Link>
+              <Link to="/guidelines" className="hero-btn hero-btn--lg hero-btn--secondary">
+                <span>Browse Guidelines</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Editorial Footer */}
       <footer className="hero-footer">
         <div className="hero-container hero-footer__inner">
           <div className="hero-footer__brand">
-            <BrandMark size={28} />
-            <span>Klarity</span>
-            <small>© 2026 Klarity Intelligence Inc. All rights reserved.</small>
+            <BrandMark size={24} />
+            <span className="hero-footer__name">Klarity</span>
+            <span className="hero-footer__divider">·</span>
+            <small>© 2026 Klarity. Archival brand governance.</small>
           </div>
           <div className="hero-footer__links">
-            <Link to="/login">Enterprise Sign In</Link>
             <Link to="/reviews">Reviews</Link>
             <Link to="/guidelines">Guidelines</Link>
-            <Link to="/assets">Brand Assets</Link>
+            <Link to="/assets">Assets</Link>
+            <Link to="/calendar">Calendar</Link>
             <Link to="/login">Sign In</Link>
           </div>
         </div>
