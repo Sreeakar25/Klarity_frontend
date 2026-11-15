@@ -10,8 +10,11 @@ load_dotenv(Path(__file__).resolve().parent / ".env")
 DATABASE_URL = os.getenv(
     "DATABASE_URL", "sqlite:///" + (Path(__file__).resolve().parent / "klarity.db").as_posix()
 )
-if not DATABASE_URL.startswith("sqlite:"):
-    raise ValueError("The standalone backend requires a sqlite: DATABASE_URL")
+# Normalize Postgres URI for SQLAlchemy (e.g. postgres:// or postgresql:// to postgresql+psycopg2://)
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
+elif DATABASE_URL.startswith("postgresql://") and not DATABASE_URL.startswith("postgresql+"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
 SEED_DEMO_DATA = os.getenv("SEED_DEMO_DATA", "true").lower() == "true"
 CORS_ORIGINS = [
     origin.strip()
