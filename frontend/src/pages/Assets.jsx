@@ -2,15 +2,18 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   ArrowUpRight,
   Check,
+  Code,
   Copy,
   Download,
   Edit3,
   FileCheck2,
+  FileCode,
   FileUp,
   Image,
   Images,
   Layers,
   Palette,
+  Pipette,
   Plus,
   RotateCcw,
   Sparkles,
@@ -18,21 +21,33 @@ import {
   Type,
   Upload,
   UploadCloud,
+  Wand2,
   X,
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { Button, Drawer, EmptyState, Field, Panel, Segmented, Select } from '../components/UI'
 import { cx } from '../lib/utils'
+import {
+  defaultRole,
+  extractColorsFromImage,
+  generateCssVariables,
+  generateTailwindConfig,
+  generateTokensJson,
+  getColorName,
+  hexToRgb,
+  normalizeHex,
+  parseSwatchesFromText,
+} from '../lib/colorUtils'
 
 const STORAGE_KEY = 'klarity_brand_assets_v2'
 
 const swatches = [
-  { name: 'Cream', hex: '#F6F1E6' },
-  { name: 'Brown / Ink', hex: '#3B2418' },
-  { name: 'Klarity Blue', hex: '#298EE4' },
-  { name: 'Clay', hex: '#A97A32' },
-  { name: 'Paper', hex: '#FBF8F1' },
-  { name: 'Blue wash', hex: '#D7EAFB' },
+  { name: 'Cream', hex: '#F6F1E6', role: 'Background' },
+  { name: 'Brown / Ink', hex: '#3B2418', role: 'Text / Ink' },
+  { name: 'Klarity Blue', hex: '#298EE4', role: 'Primary Accent' },
+  { name: 'Clay', hex: '#A97A32', role: 'Secondary' },
+  { name: 'Paper', hex: '#FBF8F1', role: 'Surface' },
+  { name: 'Blue wash', hex: '#D7EAFB', role: 'Highlight' },
 ]
 
 function LogoPlate({ dark = false }) {
@@ -71,26 +86,64 @@ function MonogramPlate() {
   )
 }
 
-function PalettePlate() {
+export function DynamicPalettePlate({ swatches: inputSwatches = [], title = 'COLOUR PALETTE' }) {
+  const displaySwatches =
+    inputSwatches && inputSwatches.length > 0 ? inputSwatches.slice(0, 6) : swatches.slice(0, 4)
+  const count = displaySwatches.length
+  const width = 320
+  const height = 200
+  const padding = 16
+  const gap = 8
+  const availableWidth = width - padding * 2 - (count - 1) * gap
+  const chipWidth = Math.max(38, Math.floor(availableWidth / count))
+
   return (
-    <svg viewBox="0 0 320 200" className="asset-svg" role="img" aria-label="Aster and Oak colour palette">
-      <rect width="320" height="200" fill="#FBF8F1" />
-      {swatches.slice(0, 4).map((swatch, index) => (
-        <g key={swatch.hex}>
-          <rect x={20 + index * 71} y="36" width="58" height="88" rx="6" fill={swatch.hex} />
-          <text x={20 + index * 71} y="145" fill="#5F675C" className="asset-svg__caption">
-            {swatch.name}
-          </text>
-          <text x={20 + index * 71} y="160" fill="#3B2418" className="asset-svg__hex">
-            {swatch.hex}
-          </text>
-        </g>
-      ))}
-      <text x="20" y="186" fill="#5F675C" className="asset-svg__caption">
-        CORE PALETTE · V2.1
+    <svg viewBox={`0 0 ${width} ${height}`} className="asset-svg" role="img" aria-label={title}>
+      <rect width={width} height={height} fill="#FBF8F1" />
+      {displaySwatches.map((swatch, index) => {
+        const x = padding + index * (chipWidth + gap)
+        return (
+          <g key={`${swatch.hex}-${index}`}>
+            <rect
+              x={x}
+              y={32}
+              width={chipWidth}
+              height={94}
+              rx={6}
+              fill={swatch.hex}
+              stroke="rgba(0,0,0,0.08)"
+              strokeWidth={1}
+            />
+            <text
+              x={x}
+              y={145}
+              fill="#5F675C"
+              className="asset-svg__caption"
+              style={{ fontSize: count > 4 ? '8.5px' : '10px' }}
+            >
+              {swatch.name ? swatch.name.slice(0, 11) : 'Token'}
+            </text>
+            <text
+              x={x}
+              y={159}
+              fill="#3B2418"
+              className="asset-svg__hex"
+              style={{ fontSize: count > 4 ? '8px' : '9.5px', fontWeight: 700 }}
+            >
+              {swatch.hex}
+            </text>
+          </g>
+        )
+      })}
+      <text x={padding} y={186} fill="#5F675C" className="asset-svg__caption">
+        {title.toUpperCase()} · {count} TOKENS
       </text>
     </svg>
   )
+}
+
+function PalettePlate() {
+  return <DynamicPalettePlate swatches={swatches} title="Core palette" />
 }
 
 function TypePlate() {
@@ -228,12 +281,38 @@ const defaultAssets = [
     title: 'Core palette',
     kind: 'colour',
     type: 'ASE · CSS',
-    size: '4 KB',
+    size: '6 tokens',
     updated: '04 Nov 2026',
     owner: 'Design ops',
     usage: 'Tokens & themes',
     description: 'Cream, ink, sage, and clay. Sage carries action and selection; it is never decorative.',
     plateType: 'palette',
+    swatches: [
+      { name: 'Cream', hex: '#F6F1E6', role: 'Background' },
+      { name: 'Brown / Ink', hex: '#3B2418', role: 'Text / Ink' },
+      { name: 'Klarity Blue', hex: '#298EE4', role: 'Primary Accent' },
+      { name: 'Clay', hex: '#A97A32', role: 'Secondary' },
+      { name: 'Paper', hex: '#FBF8F1', role: 'Surface' },
+      { name: 'Blue wash', hex: '#D7EAFB', role: 'Highlight' },
+    ],
+  },
+  {
+    id: 'palette-autumn',
+    title: 'Autumn Campaign Wash',
+    kind: 'colour',
+    type: 'Palette · Tokens',
+    size: '4 tokens',
+    updated: '08 Nov 2026',
+    owner: 'Creative ops',
+    usage: 'Campaign plate & social',
+    description: 'Deep ink base with warm linen rule, rich terracotta clay, and wash highlights.',
+    plateType: 'palette',
+    swatches: [
+      { name: 'Deep Ink', hex: '#22140D', role: 'Base / Ground' },
+      { name: 'Linen Rule', hex: '#DDE5D6', role: 'Highlight' },
+      { name: 'Terracotta', hex: '#A97A32', role: 'Accent' },
+      { name: 'Klarity Sky', hex: '#298EE4', role: 'Action' },
+    ],
   },
   {
     id: 'type',
@@ -298,6 +377,9 @@ const defaultAssets = [
 ]
 
 function renderAssetPreview(asset, large = false) {
+  if (asset.kind === 'colour' || (asset.swatches && asset.swatches.length > 0)) {
+    return <DynamicPalettePlate swatches={asset.swatches || swatches} title={asset.title} />
+  }
   if (asset.imageUrl) {
     return (
       <div className={cx('asset-card__image-wrap', large && 'asset-drawer__preview--uploaded')}>
@@ -365,6 +447,21 @@ export function Assets() {
     owner: 'Brand team',
   })
 
+  // Palette Studio State
+  const [paletteTab, setPaletteTab] = useState('builder') // 'builder' | 'paste' | 'extract'
+  const [paletteSwatches, setPaletteSwatches] = useState([
+    { name: 'Cream', hex: '#F6F1E6', role: 'Background' },
+    { name: 'Brown / Ink', hex: '#3B2418', role: 'Text / Ink' },
+    { name: 'Klarity Blue', hex: '#298EE4', role: 'Primary Accent' },
+    { name: 'Clay', hex: '#A97A32', role: 'Secondary' },
+  ])
+  const [pasteText, setPasteText] = useState('')
+  const [extractedThumb, setExtractedThumb] = useState(null)
+  const extractInputRef = useRef(null)
+
+  // Edit Mode Palette State
+  const [editSwatches, setEditSwatches] = useState([])
+
   // Drag and drop states
   const [isDraggingPage, setIsDraggingPage] = useState(false)
   const [isDraggingDropzone, setIsDraggingDropzone] = useState(false)
@@ -380,7 +477,12 @@ export function Assets() {
       if (saved) {
         const parsed = JSON.parse(saved)
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed
+          return parsed.map((item) => {
+            if (item.id === 'palette' && !item.swatches) {
+              return { ...item, swatches }
+            }
+            return item
+          })
         }
       }
     } catch {}
@@ -408,6 +510,89 @@ export function Assets() {
     }
   }
 
+  const handleUpdateSwatch = (index, field, value) => {
+    setPaletteSwatches((prev) => {
+      const next = [...prev]
+      next[index] = { ...next[index], [field]: value }
+      if (field === 'hex' && normalizeHex(value) && (!next[index].name || next[index].name === 'New Token')) {
+        next[index].name = getColorName(normalizeHex(value))
+      }
+      return next
+    })
+  }
+
+  const handleAddSwatch = () => {
+    const roles = ['Accent', 'Secondary', 'Highlight', 'Surface', 'Muted']
+    const nextRole = roles[paletteSwatches.length % roles.length]
+    setPaletteSwatches((prev) => [
+      ...prev,
+      { name: 'New Token', hex: '#298EE4', role: nextRole },
+    ])
+  }
+
+  const handleRemoveSwatch = (index) => {
+    if (paletteSwatches.length <= 1) return
+    setPaletteSwatches((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const handleApplyPreset = (presetName) => {
+    if (presetName === 'core') {
+      setPaletteSwatches([
+        { name: 'Cream', hex: '#F6F1E6', role: 'Background' },
+        { name: 'Brown / Ink', hex: '#3B2418', role: 'Text / Ink' },
+        { name: 'Klarity Blue', hex: '#298EE4', role: 'Accent / Action' },
+        { name: 'Clay', hex: '#A97A32', role: 'Secondary' },
+        { name: 'Paper', hex: '#FBF8F1', role: 'Surface' },
+        { name: 'Blue wash', hex: '#D7EAFB', role: 'Highlight' },
+      ])
+      toast('Loaded Aster & Oak Core tokens.', 'good')
+    } else if (presetName === 'earth') {
+      setPaletteSwatches([
+        { name: 'Warm Linen', hex: '#F7F3E9', role: 'Background' },
+        { name: 'Espresso', hex: '#2C1D11', role: 'Deep Text' },
+        { name: 'Terracotta', hex: '#C86D51', role: 'Primary Accent' },
+        { name: 'Olive Sage', hex: '#7A8B7B', role: 'Secondary' },
+      ])
+      toast('Loaded Warm Earth preset.', 'good')
+    } else if (presetName === 'modern') {
+      setPaletteSwatches([
+        { name: 'Ice White', hex: '#F8FAFC', role: 'Background' },
+        { name: 'Slate Dark', hex: '#0F172A', role: 'Primary Text' },
+        { name: 'Electric Blue', hex: '#2563EB', role: 'Accent / Action' },
+        { name: 'Sky Cyan', hex: '#38BDF8', role: 'Secondary' },
+      ])
+      toast('Loaded Modern Blue preset.', 'good')
+    }
+  }
+
+  const handleApplyPaste = () => {
+    const parsed = parseSwatchesFromText(pasteText)
+    if (parsed.length > 0) {
+      setPaletteSwatches(parsed)
+      setPaletteTab('builder')
+      toast(`Successfully parsed ${parsed.length} color tokens!`, 'good')
+    } else {
+      toast('Could not find valid hex colors in pasted text.', 'warn')
+    }
+  }
+
+  const handleExtractImage = (file) => {
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = async (e) => {
+      const dataUrl = e.target.result
+      setExtractedThumb(dataUrl)
+      const extracted = await extractColorsFromImage(dataUrl, 6)
+      if (extracted.length > 0) {
+        setPaletteSwatches(extracted)
+        toast(`Extracted ${extracted.length} dominant colors from image!`, 'good')
+      } else {
+        toast('Could not extract distinct colors from image.', 'warn')
+      }
+    }
+    reader.readAsDataURL(file)
+  }
+
   // Parse uploaded file
   const processFile = (file, isReplace = false) => {
     if (!file) return
@@ -418,6 +603,33 @@ export function Assets() {
       file.size > 1024 * 1024
         ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
         : `${Math.round(file.size / 1024)} KB`
+
+    // If json or css file, parse tokens
+    if (file.name.endsWith('.json') || file.name.endsWith('.css') || file.name.endsWith('.txt')) {
+      const textReader = new FileReader()
+      textReader.onload = (e) => {
+        const text = e.target.result
+        const parsed = parseSwatchesFromText(text)
+        if (parsed.length > 0) {
+          if (isReplace) {
+            setEditSwatches(parsed)
+            setEditForm((prev) => ({ ...prev, kind: 'colour', type: 'Palette · Tokens' }))
+          } else {
+            setPaletteSwatches(parsed)
+            setUploadForm((prev) => ({
+              ...prev,
+              title: prev.title || cleanTitle,
+              kind: 'colour',
+              type: 'Palette · Tokens',
+            }))
+            setUploadOpen(true)
+          }
+          toast(`Extracted ${parsed.length} color tokens from ${file.name}!`, 'good')
+        }
+      }
+      textReader.readAsText(file)
+      return
+    }
 
     const reader = new FileReader()
     reader.onload = (e) => {
@@ -442,6 +654,15 @@ export function Assets() {
           title: prev.title || cleanTitle,
           type: ext,
         }))
+        if (isImage && uploadForm.kind === 'colour') {
+          extractColorsFromImage(dataUrl, 6).then((extracted) => {
+            if (extracted.length > 0) {
+              setPaletteSwatches(extracted)
+              setExtractedThumb(dataUrl)
+              toast(`Extracted ${extracted.length} colors from uploaded image.`, 'good')
+            }
+          })
+        }
         setUploadOpen(true)
       }
     }
@@ -504,17 +725,23 @@ export function Assets() {
       year: 'numeric',
     }).format(new Date())
 
+    const isPalette = uploadForm.kind === 'colour'
     const newAsset = {
       id: `asset-${Date.now()}`,
       title: uploadForm.title.trim(),
       kind: uploadForm.kind,
-      type: uploadForm.type || 'SVG',
-      size: uploadFile?.size || '12 KB',
+      type: isPalette ? 'Palette · Tokens' : uploadForm.type || 'SVG',
+      size: isPalette ? `${paletteSwatches.length} tokens` : uploadFile?.size || '12 KB',
       updated: today,
-      owner: uploadForm.owner || 'Brand team',
-      usage: uploadForm.usage || 'Digital + print',
-      description: uploadForm.description.trim() || 'Approved brand asset.',
+      owner: uploadForm.owner || (isPalette ? 'Design ops' : 'Brand team'),
+      usage: uploadForm.usage || (isPalette ? 'Tokens & themes' : 'Digital + print'),
+      description:
+        uploadForm.description.trim() ||
+        (isPalette
+          ? `Approved brand color palette tokens (${paletteSwatches.map((s) => s.name).join(', ')}).`
+          : 'Approved brand asset.'),
       imageUrl: uploadFile?.dataUrl || null,
+      swatches: isPalette ? paletteSwatches : undefined,
       isCustom: true,
     }
 
@@ -522,6 +749,7 @@ export function Assets() {
     toast(`Asset "${newAsset.title}" added to library.`, 'good')
     setUploadOpen(false)
     setUploadFile(null)
+    setExtractedThumb(null)
     setUploadForm({
       title: '',
       kind: 'logos',
@@ -536,16 +764,24 @@ export function Assets() {
   const handleOpenAsset = (asset) => {
     setSelected(asset)
     setIsEditing(false)
+    setEditSwatches(
+      asset.swatches && asset.swatches.length > 0
+        ? [...asset.swatches]
+        : asset.kind === 'colour'
+          ? [...swatches]
+          : []
+    )
     setEditForm({
       title: asset.title,
       kind: asset.kind,
       type: asset.type,
       size: asset.size,
       updated: asset.updated,
-      owner: asset.owner || 'Brand team',
-      usage: asset.usage || 'Digital and print',
+      owner: asset.owner || (asset.kind === 'colour' ? 'Design ops' : 'Brand team'),
+      usage: asset.usage || (asset.kind === 'colour' ? 'Tokens & themes' : 'Digital and print'),
       description: asset.description || '',
       imageUrl: asset.imageUrl || null,
+      swatches: asset.swatches ? [...asset.swatches] : undefined,
     })
   }
 
@@ -557,6 +793,10 @@ export function Assets() {
       return
     }
 
+    const isPalette = editForm.kind === 'colour'
+    const finalSwatches = isPalette && editSwatches.length > 0 ? editSwatches : undefined
+    const finalSize = isPalette && editSwatches.length > 0 ? `${editSwatches.length} tokens` : editForm.size
+
     setAssetsList((prev) =>
       prev.map((item) =>
         item.id === selected.id
@@ -565,6 +805,8 @@ export function Assets() {
               ...editForm,
               title: editForm.title.trim(),
               description: editForm.description.trim(),
+              swatches: finalSwatches,
+              size: finalSize,
               updated: 'Today',
             }
           : item,
@@ -576,11 +818,13 @@ export function Assets() {
       ...editForm,
       title: editForm.title.trim(),
       description: editForm.description.trim(),
+      swatches: finalSwatches,
+      size: finalSize,
       updated: 'Today',
     }))
 
     setIsEditing(false)
-    toast('Asset updated successfully.', 'good')
+    toast('Asset updated.', 'good')
   }
 
   // Delete asset
@@ -805,79 +1049,19 @@ export function Assets() {
         }
       >
         <form className="asset-edit-form" onSubmit={handleCreateAsset}>
-          {/* Dropzone */}
-          <div
-            className={cx('asset-dropzone', isDraggingDropzone && 'is-dragover')}
-            onClick={() => fileInputRef.current?.click()}
-            onDragOver={(e) => {
-              e.preventDefault()
-              setIsDraggingDropzone(true)
-            }}
-            onDragLeave={() => setIsDraggingDropzone(false)}
-            onDrop={(e) => {
-              e.preventDefault()
-              setIsDraggingDropzone(false)
-              if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
-                processFile(e.dataTransfer.files[0])
-              }
-            }}
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*,.svg,.pdf,.ase,.woff,.woff2,.ttf"
-              onChange={(e) => {
-                if (e.target.files && e.target.files[0]) {
-                  processFile(e.target.files[0])
-                }
-              }}
-              style={{ display: 'none' }}
-            />
-
-            {uploadFile?.dataUrl ? (
-              <div className="asset-dropzone__preview" onClick={(e) => e.stopPropagation()}>
-                <img src={uploadFile.dataUrl} alt="Upload preview" />
-                <button
-                  type="button"
-                  className="asset-dropzone__clear-btn"
-                  title="Remove file"
-                  onClick={() => setUploadFile(null)}
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            ) : (
-              <>
-                <div className="asset-dropzone__icon-wrap">
-                  <FileUp size={22} />
-                </div>
-                <div className="asset-dropzone__title">
-                  Drag &amp; drop your file here, or <span style={{ color: 'var(--sage)' }}>browse</span>
-                </div>
-                <div className="asset-dropzone__hint">Supports SVG, PNG, JPG, WebP, PDF, ASE palettes</div>
-              </>
-            )}
-          </div>
-
-          <Field label="Asset Title" htmlFor="upload-title">
-            <input
-              id="upload-title"
-              type="text"
-              className="asset-form-input"
-              value={uploadForm.title}
-              onChange={(e) => setUploadForm({ ...uploadForm, title: e.target.value })}
-              placeholder="e.g. Autumn 2026 Hero Banner"
-              required
-            />
-          </Field>
-
           <div className="asset-form-grid">
             <Field label="Category / Kind" htmlFor="upload-kind">
               <Select
                 id="upload-kind"
                 value={uploadForm.kind}
                 options={categoryOptions}
-                onChange={(val) => setUploadForm({ ...uploadForm, kind: val })}
+                onChange={(val) => {
+                  setUploadForm((prev) => ({
+                    ...prev,
+                    kind: val,
+                    type: val === 'colour' ? 'Palette · Tokens' : (prev.type === 'Palette · Tokens' ? 'SVG' : prev.type),
+                  }))
+                }}
               />
             </Field>
 
@@ -888,10 +1072,316 @@ export function Assets() {
                 className="asset-form-input"
                 value={uploadForm.type}
                 onChange={(e) => setUploadForm({ ...uploadForm, type: e.target.value })}
-                placeholder="SVG, PNG 2x, etc."
+                placeholder={uploadForm.kind === 'colour' ? 'Palette · Tokens' : 'SVG, PNG 2x, etc.'}
               />
             </Field>
           </div>
+
+          {/* If Colour & Palettes is selected, show Palette Studio */}
+          {uploadForm.kind === 'colour' ? (
+            <div className="palette-studio">
+              <div className="palette-studio__header">
+                <div>
+                  <strong style={{ fontSize: '13px', color: 'var(--ink)' }}>Palette Studio</strong>
+                  <p style={{ fontSize: '11.5px', color: 'var(--muted)', margin: '2px 0 0' }}>
+                    Visual swatches, paste tokens/CSS, or auto-extract from moodboard
+                  </p>
+                </div>
+                <div className="palette-studio__nav">
+                  <button
+                    type="button"
+                    className={cx('palette-studio__tab', paletteTab === 'builder' && 'is-active')}
+                    onClick={() => setPaletteTab('builder')}
+                  >
+                    <Palette size={13} /> Visual Builder
+                  </button>
+                  <button
+                    type="button"
+                    className={cx('palette-studio__tab', paletteTab === 'paste' && 'is-active')}
+                    onClick={() => setPaletteTab('paste')}
+                  >
+                    <Code size={13} /> Paste Code / CSS
+                  </button>
+                  <button
+                    type="button"
+                    className={cx('palette-studio__tab', paletteTab === 'extract' && 'is-active')}
+                    onClick={() => setPaletteTab('extract')}
+                  >
+                    <Pipette size={13} /> Extract from Image
+                  </button>
+                </div>
+              </div>
+
+              {paletteTab === 'builder' && (
+                <div className="palette-builder-pane">
+                  <div className="palette-swatches-list">
+                    {paletteSwatches.map((swatch, idx) => (
+                      <div key={idx} className="palette-swatch-row">
+                        <div
+                          className="palette-swatch-chip"
+                          style={{ background: swatch.hex }}
+                          title="Click to pick color"
+                        >
+                          <input
+                            type="color"
+                            value={normalizeHex(swatch.hex) || '#298EE4'}
+                            onChange={(e) => handleUpdateSwatch(idx, 'hex', e.target.value.toUpperCase())}
+                          />
+                        </div>
+                        <input
+                          type="text"
+                          className="palette-swatch-input palette-swatch-input--hex"
+                          value={swatch.hex}
+                          onChange={(e) => handleUpdateSwatch(idx, 'hex', e.target.value)}
+                          placeholder="#298EE4"
+                          maxLength={7}
+                        />
+                        <input
+                          type="text"
+                          className="palette-swatch-input"
+                          value={swatch.name}
+                          onChange={(e) => handleUpdateSwatch(idx, 'name', e.target.value)}
+                          placeholder="Color name"
+                        />
+                        <input
+                          type="text"
+                          className="palette-swatch-input"
+                          value={swatch.role}
+                          onChange={(e) => handleUpdateSwatch(idx, 'role', e.target.value)}
+                          placeholder="Token role (e.g. Primary)"
+                        />
+                        <button
+                          type="button"
+                          className="palette-swatch-delete"
+                          disabled={paletteSwatches.length <= 1}
+                          onClick={() => handleRemoveSwatch(idx)}
+                          title="Remove swatch"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="palette-studio__actions">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      icon={Plus}
+                      onClick={handleAddSwatch}
+                      style={{ height: '30px', fontSize: '12px' }}
+                    >
+                      Add color swatch
+                    </Button>
+
+                    <div className="palette-studio__presets">
+                      <span style={{ fontSize: '11px', color: 'var(--muted)' }}>Presets:</span>
+                      <button
+                        type="button"
+                        className="palette-studio__preset-tag"
+                        onClick={() => handleApplyPreset('core')}
+                      >
+                        Aster &amp; Oak Core
+                      </button>
+                      <button
+                        type="button"
+                        className="palette-studio__preset-tag"
+                        onClick={() => handleApplyPreset('earth')}
+                      >
+                        Warm Earth
+                      </button>
+                      <button
+                        type="button"
+                        className="palette-studio__preset-tag"
+                        onClick={() => handleApplyPreset('modern')}
+                      >
+                        Modern Blue
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {paletteTab === 'paste' && (
+                <div className="palette-paste-pane">
+                  <textarea
+                    className="palette-paste-textarea"
+                    value={pasteText}
+                    onChange={(e) => setPasteText(e.target.value)}
+                    placeholder="Paste comma-separated hex codes, CSS variables, JSON tokens, or Tailwind colors...&#10;&#10;Examples:&#10;#F6F1E6, #3B2418, #298EE4, #A97A32&#10;&#10;Or CSS variables:&#10;--color-cream: #F6F1E6;&#10;--color-ink: #3B2418;&#10;--color-sage: #298EE4;&#10;&#10;Or JSON:&#10;{ &quot;cream&quot;: &quot;#F6F1E6&quot;, &quot;ink&quot;: &quot;#3B2418&quot; }"
+                  />
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                    <Button
+                      type="button"
+                      variant="primary"
+                      icon={Wand2}
+                      onClick={handleApplyPaste}
+                      style={{ height: '32px', fontSize: '12px' }}
+                    >
+                      Parse &amp; Apply Tokens
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {paletteTab === 'extract' && (
+                <div className="palette-extract-pane">
+                  <input
+                    ref={extractInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        handleExtractImage(e.target.files[0])
+                      }
+                    }}
+                    style={{ display: 'none' }}
+                  />
+                  <div
+                    className="palette-extract-dropzone"
+                    onClick={() => extractInputRef.current?.click()}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault()
+                      if (e.dataTransfer?.files && e.dataTransfer.files[0]) {
+                        handleExtractImage(e.dataTransfer.files[0])
+                      }
+                    }}
+                  >
+                    <Pipette size={24} style={{ color: 'var(--sage)' }} />
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--ink)' }}>
+                      Drop any moodboard or brand image here
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)' }}>
+                      HTML5 Canvas will sample pixels and extract 4–6 prominent colors into swatches
+                    </div>
+                  </div>
+
+                  {extractedThumb && (
+                    <div className="palette-extract-preview">
+                      <img src={extractedThumb} alt="Extracted source" className="palette-extract-thumb" />
+                      <div style={{ flex: 1 }}>
+                        <strong style={{ fontSize: '12px', display: 'block', color: 'var(--ink)' }}>
+                          Colors Extracted
+                        </strong>
+                        <div style={{ display: 'flex', gap: '4px', marginTop: '6px' }}>
+                          {paletteSwatches.map((s, idx) => (
+                            <span
+                              key={idx}
+                              style={{
+                                width: '22px',
+                                height: '22px',
+                                borderRadius: '4px',
+                                background: s.hex,
+                                display: 'inline-block',
+                                border: '1px solid rgba(0,0,0,0.1)',
+                              }}
+                              title={`${s.name}: ${s.hex}`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => setPaletteTab('builder')}
+                        style={{ height: '28px', fontSize: '11px' }}
+                      >
+                        Edit swatches
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Live Preview Plate */}
+              <div style={{ marginTop: '4px' }}>
+                <span
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    color: 'var(--muted)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
+                  }}
+                >
+                  Live Plate Preview
+                </span>
+                <div className="palette-live-preview">
+                  <DynamicPalettePlate
+                    swatches={paletteSwatches}
+                    title={uploadForm.title || 'Brand Palette'}
+                  />
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* Standard File Dropzone for Logos, Typography, Campaigns */
+            <div
+              className={cx('asset-dropzone', isDraggingDropzone && 'is-dragover')}
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={(e) => {
+                e.preventDefault()
+                setIsDraggingDropzone(true)
+              }}
+              onDragLeave={() => setIsDraggingDropzone(false)}
+              onDrop={(e) => {
+                e.preventDefault()
+                setIsDraggingDropzone(false)
+                if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+                  processFile(e.dataTransfer.files[0])
+                }
+              }}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,.svg,.pdf,.ase,.woff,.woff2,.ttf"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    processFile(e.target.files[0])
+                  }
+                }}
+                style={{ display: 'none' }}
+              />
+
+              {uploadFile?.dataUrl ? (
+                <div className="asset-dropzone__preview" onClick={(e) => e.stopPropagation()}>
+                  <img src={uploadFile.dataUrl} alt="Upload preview" />
+                  <button
+                    type="button"
+                    className="asset-dropzone__clear-btn"
+                    title="Remove file"
+                    onClick={() => setUploadFile(null)}
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="asset-dropzone__icon-wrap">
+                    <FileUp size={22} />
+                  </div>
+                  <div className="asset-dropzone__title">
+                    Drag &amp; drop your file here, or <span style={{ color: 'var(--sage)' }}>browse</span>
+                  </div>
+                  <div className="asset-dropzone__hint">Supports SVG, PNG, JPG, WebP, PDF, ASE palettes</div>
+                </>
+              )}
+            </div>
+          )}
+
+          <Field label="Asset Title" htmlFor="upload-title">
+            <input
+              id="upload-title"
+              type="text"
+              className="asset-form-input"
+              value={uploadForm.title}
+              onChange={(e) => setUploadForm({ ...uploadForm, title: e.target.value })}
+              placeholder={uploadForm.kind === 'colour' ? 'e.g. Summer Campaign Palette' : 'e.g. Autumn 2026 Hero Banner'}
+              required
+            />
+          </Field>
 
           <div className="asset-form-grid">
             <Field label="Approved Usage" htmlFor="upload-usage">
@@ -990,28 +1480,133 @@ export function Assets() {
           isEditing ? (
             /* Edit Mode */
             <form className="asset-edit-form" onSubmit={handleSaveEdit}>
-              {/* Replace file area */}
-              <div
-                className="asset-dropzone"
-                onClick={() => replaceInputRef.current?.click()}
-              >
-                <input
-                  ref={replaceInputRef}
-                  type="file"
-                  accept="image/*,.svg,.pdf,.ase"
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
-                      processFile(e.target.files[0], true)
-                    }
-                  }}
-                  style={{ display: 'none' }}
-                />
-                <div className="asset-dropzone__icon-wrap">
-                  <Upload size={18} />
+              {/* If editing color palette, provide swatch editor */}
+              {editForm.kind === 'colour' ? (
+                <div className="palette-studio">
+                  <div className="palette-studio__header">
+                    <div>
+                      <strong style={{ fontSize: '13px', color: 'var(--ink)' }}>Palette Swatches</strong>
+                      <p style={{ fontSize: '11.5px', color: 'var(--muted)', margin: '2px 0 0' }}>
+                        Modify token names, hex codes, or add new swatches
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="palette-swatches-list">
+                    {editSwatches.map((swatch, idx) => (
+                      <div key={idx} className="palette-swatch-row">
+                        <div
+                          className="palette-swatch-chip"
+                          style={{ background: swatch.hex }}
+                          title="Click to pick color"
+                        >
+                          <input
+                            type="color"
+                            value={normalizeHex(swatch.hex) || '#298EE4'}
+                            onChange={(e) => {
+                              const val = e.target.value.toUpperCase()
+                              setEditSwatches((prev) => {
+                                const next = [...prev]
+                                next[idx] = { ...next[idx], hex: val }
+                                return next
+                              })
+                            }}
+                          />
+                        </div>
+                        <input
+                          type="text"
+                          className="palette-swatch-input palette-swatch-input--hex"
+                          value={swatch.hex}
+                          onChange={(e) => {
+                            const val = e.target.value
+                            setEditSwatches((prev) => {
+                              const next = [...prev]
+                              next[idx] = { ...next[idx], hex: val }
+                              return next
+                            })
+                          }}
+                          placeholder="#298EE4"
+                          maxLength={7}
+                        />
+                        <input
+                          type="text"
+                          className="palette-swatch-input"
+                          value={swatch.name}
+                          onChange={(e) => {
+                            const val = e.target.value
+                            setEditSwatches((prev) => {
+                              const next = [...prev]
+                              next[idx] = { ...next[idx], name: val }
+                              return next
+                            })
+                          }}
+                          placeholder="Color name"
+                        />
+                        <input
+                          type="text"
+                          className="palette-swatch-input"
+                          value={swatch.role}
+                          onChange={(e) => {
+                            const val = e.target.value
+                            setEditSwatches((prev) => {
+                              const next = [...prev]
+                              next[idx] = { ...next[idx], role: val }
+                              return next
+                            })
+                          }}
+                          placeholder="Role"
+                        />
+                        <button
+                          type="button"
+                          className="palette-swatch-delete"
+                          disabled={editSwatches.length <= 1}
+                          onClick={() => setEditSwatches((prev) => prev.filter((_, i) => i !== idx))}
+                          title="Remove swatch"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      icon={Plus}
+                      onClick={() =>
+                        setEditSwatches((prev) => [
+                          ...prev,
+                          { name: 'New Token', hex: '#298EE4', role: 'Accent' },
+                        ])
+                      }
+                      style={{ height: '30px', fontSize: '12px', marginTop: '4px' }}
+                    >
+                      Add color swatch
+                    </Button>
+                  </div>
                 </div>
-                <div className="asset-dropzone__title">Click or drop to replace asset artwork</div>
-                <div className="asset-dropzone__hint">Will update thumbnail and download file</div>
-              </div>
+              ) : (
+                /* Replace file area for image assets */
+                <div
+                  className="asset-dropzone"
+                  onClick={() => replaceInputRef.current?.click()}
+                >
+                  <input
+                    ref={replaceInputRef}
+                    type="file"
+                    accept="image/*,.svg,.pdf,.ase"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        processFile(e.target.files[0], true)
+                      }
+                    }}
+                    style={{ display: 'none' }}
+                  />
+                  <div className="asset-dropzone__icon-wrap">
+                    <Upload size={18} />
+                  </div>
+                  <div className="asset-dropzone__title">Click or drop to replace asset artwork</div>
+                  <div className="asset-dropzone__hint">Will update thumbnail and download file</div>
+                </div>
+              )}
 
               <Field label="Title" htmlFor="edit-title">
                 <input
@@ -1085,7 +1680,120 @@ export function Assets() {
               >
                 {renderAssetPreview(selected, true)}
               </div>
-              <div className="asset-drawer__facts">
+
+              {/* Palette Interactive Tokens Grid & Export Bar */}
+              {(selected.kind === 'colour' || (selected.swatches && selected.swatches.length > 0)) && (
+                <div style={{ marginTop: '16px' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: '8px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        color: 'var(--muted)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em',
+                      }}
+                    >
+                      Token Swatches (Click to copy)
+                    </span>
+                    <span style={{ fontSize: '11px', color: 'var(--muted)' }}>
+                      {(selected.swatches || swatches).length} tokens
+                    </span>
+                  </div>
+
+                  <div className="palette-tokens-grid">
+                    {(selected.swatches || swatches).map((swatch, idx) => {
+                      const rgb = hexToRgb(swatch.hex).str
+                      return (
+                        <div
+                          key={`${swatch.hex}-${idx}`}
+                          className="palette-token-card"
+                          onClick={() => copy(swatch.hex, `${swatch.name} (${swatch.hex})`)}
+                          title="Click to copy hex"
+                        >
+                          <div className="palette-token-chip" style={{ background: swatch.hex }}>
+                            <span
+                              style={{
+                                background: 'rgba(0,0,0,0.5)',
+                                color: '#fff',
+                                fontSize: '10px',
+                                padding: '2px 5px',
+                                borderRadius: '3px',
+                                fontWeight: 700,
+                              }}
+                            >
+                              {swatch.hex}
+                            </span>
+                          </div>
+                          <div className="palette-token-body">
+                            <span className="palette-token-name">{swatch.name}</span>
+                            <span className="palette-token-role">{swatch.role || `Token ${idx + 1}`}</span>
+                            <span className="palette-token-copy">
+                              <Copy size={10} /> {rgb}
+                            </span>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  <div className="palette-export-bar" style={{ marginTop: '16px' }}>
+                    <Button
+                      variant="secondary"
+                      icon={Code}
+                      onClick={() =>
+                        copy(generateCssVariables(selected.swatches || swatches), 'CSS variables')
+                      }
+                    >
+                      Copy CSS (:root)
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      icon={FileCode}
+                      onClick={() =>
+                        copy(generateTailwindConfig(selected.swatches || swatches), 'Tailwind config')
+                      }
+                    >
+                      Copy Tailwind
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      icon={Copy}
+                      onClick={() =>
+                        copy(generateTokensJson(selected.swatches || swatches), 'Tokens JSON')
+                      }
+                    >
+                      Copy JSON
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      icon={Download}
+                      onClick={() => {
+                        const cssContent = generateCssVariables(selected.swatches || swatches)
+                        const blob = new Blob([cssContent], { type: 'text/css' })
+                        const url = URL.createObjectURL(blob)
+                        const a = document.createElement('a')
+                        a.href = url
+                        a.download = `${selected.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-tokens.css`
+                        a.click()
+                        URL.revokeObjectURL(url)
+                        toast('Downloaded CSS token variables.', 'good')
+                      }}
+                    >
+                      Export .css
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              <div className="asset-drawer__facts" style={{ marginTop: '16px' }}>
                 <div>
                   <span>Approved</span>
                   <strong>{selected.updated || '12 Nov 2026'}</strong>
