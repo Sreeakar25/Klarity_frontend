@@ -29,9 +29,20 @@ const items = [
 ]
 
 export function Sidebar({ open, onClose, onNewReview }) {
-  const { data, toast } = useApp()
+  const { data, toast, isLead, currentUser } = useApp()
   const location = useLocation()
-  const queue = data?.stats?.pending_reviews ?? 0
+  const queue = isLead
+    ? (data?.stats?.pending_reviews ?? 0)
+    : (data?.submissions || []).filter((item) => {
+        const author = (item.submitted_by || '').toLowerCase()
+        const userLower = (currentUser || '').toLowerCase()
+        const isMine =
+          (userLower && (author === userLower || author.includes(userLower))) ||
+          author.includes('ashwik') ||
+          author.includes('creator') ||
+          userLower.includes('ashwik')
+        return isMine && (item.status === 'reviewing' || item.status === 'pending' || item.status === 'needs_changes')
+      }).length
   const score = data?.stats?.avg_score ?? 88
 
   const navRef = useRef(null)

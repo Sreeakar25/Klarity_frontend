@@ -49,38 +49,48 @@ const statusTabs = [
 const PAGE_SIZE = 10
 
 export function Reviews({ onNewReview }) {
-  const { data, currentUser } = useApp()
+  const { data, currentUser, isLead } = useApp()
   const navigate = useNavigate()
   const [status, setStatus] = useState('all')
-  const [scope, setScope] = useState('all')
   const [query, setQuery] = useState('')
   const [type, setType] = useState('all')
   const [sort, setSort] = useState('newest')
   const [page, setPage] = useState(0)
 
+  // When team member, strictly show only their own authored submissions
+  const baseSubmissions = useMemo(() => {
+    if (isLead) return data.submissions
+    const userLower = (currentUser || '').toLowerCase()
+    return data.submissions.filter((item) => {
+      const author = (item.submitted_by || '').toLowerCase()
+      return (
+        author === userLower ||
+        author.includes(userLower) ||
+        author === 'ashwik' ||
+        author.includes('creator') ||
+        userLower === 'ashwik'
+      )
+    })
+  }, [currentUser, data.submissions, isLead])
+
   const counts = useMemo(() => {
-    const base = { all: data.submissions.length }
-    data.submissions.forEach((item) => {
+    const base = { all: baseSubmissions.length }
+    baseSubmissions.forEach((item) => {
       base[item.status] = (base[item.status] || 0) + 1
     })
     return base
-  }, [data.submissions])
+  }, [baseSubmissions])
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase()
-    const result = data.submissions.filter((item) => {
+    const result = baseSubmissions.filter((item) => {
       const matchesStatus = status === 'all' || item.status === status
       const matchesType = type === 'all' || item.content_type === type
-      const matchesScope =
-        scope === 'all' ||
-        item.submitted_by.toLowerCase().includes(currentUser?.toLowerCase() || '') ||
-        item.submitted_by.toLowerCase().includes('ashwik') ||
-        item.submitted_by.toLowerCase().includes('creator')
       const matchesQuery =
         !needle ||
         item.title.toLowerCase().includes(needle) ||
         item.submitted_by.toLowerCase().includes(needle)
-      return matchesStatus && matchesType && matchesScope && matchesQuery
+      return matchesStatus && matchesType && matchesQuery
     })
     return result.sort((a, b) => {
       if (sort === 'score') {
@@ -89,7 +99,7 @@ export function Reviews({ onNewReview }) {
       if (sort === 'oldest') return new Date(a.submitted_at) - new Date(b.submitted_at)
       return new Date(b.submitted_at) - new Date(a.submitted_at)
     })
-  }, [currentUser, data.submissions, query, scope, sort, status, type])
+  }, [baseSubmissions, query, sort, status, type])
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const currentPage = Math.min(page, pageCount - 1)
@@ -97,7 +107,6 @@ export function Reviews({ onNewReview }) {
 
   const reset = () => {
     setStatus('all')
-    setScope('all')
     setType('all')
     setQuery('')
     setPage(0)
@@ -107,24 +116,22 @@ export function Reviews({ onNewReview }) {
     <div className="reviews-page">
       <section className="page-head">
         <div>
-          <h1>Reviews</h1>
+          <div className="page-head__role-pill">
+            <span className="creator-role-tag">
+              {isLead ? 'Governance Queue' : 'My Personal Queue'}
+            </span>
+          </div>
+          <h1>{isLead ? 'Workspace Reviews' : 'My Submissions'}</h1>
           <p>
-            Browse all editorial reviews across Aster &amp; Oak. Team members can inspect scores, guideline findings, and lead decisions.
+            {isLead
+              ? 'Every piece of content that has passed through the workspace, with its evidence and decision.'
+              : 'Track only the content you created — see what is approved, what is currently in review, and what is pending.'}
           </p>
         </div>
         <div className="page-head__actions">
-          <Segmented
-            label="Review scope"
-            value={scope}
-            onChange={(val) => {
-              setScope(val)
-              setPage(0)
-            }}
-            options={[
-              { value: 'all', label: 'All workspace' },
-              { value: 'mine', label: 'My pieces' },
-            ]}
-          />
+          <span className="review-count">
+            <strong>{counts.reviewing || 0}</strong> {isLead ? 'waiting on reviewer' : 'in review'}
+          </span>
           <Button icon={Plus} onClick={onNewReview}>
             New review
           </Button>

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -98,6 +98,27 @@ export function Topbar({ onMenu, onNewReview, currentPath }) {
     navigate(`/reviews/${id}`)
   }
 
+  const notifications = useMemo(() => {
+    const list = data?.activity || []
+    if (isLead) return list.slice(0, 5)
+    const userLower = (user?.username || '').toLowerCase()
+    const mySubIds = new Set(
+      (data?.submissions || [])
+        .filter((s) => {
+          const author = (s.submitted_by || '').toLowerCase()
+          return (
+            (userLower && (author === userLower || author.includes(userLower))) ||
+            author.includes('ashwik') ||
+            author.includes('creator') ||
+            userLower.includes('ashwik')
+          )
+        })
+        .map((s) => s.id)
+    )
+    const filtered = list.filter((a) => mySubIds.has(a.submission_id))
+    return filtered.slice(0, 5)
+  }, [data?.activity, data?.submissions, isLead, user?.username])
+
   return (
     <>
       <header className="topbar" ref={barRef}>
@@ -170,10 +191,10 @@ export function Topbar({ onMenu, onNewReview, currentPath }) {
                     <h3>Notifications</h3>
                     <p>Recent review activity</p>
                   </div>
-                  <span className="popover__count">{data?.activity?.length || 0}</span>
+                  <span className="popover__count">{notifications.length}</span>
                 </div>
                 <ul className="notification-list">
-                  {(data?.activity || []).slice(0, 5).map((item) => {
+                  {notifications.map((item) => {
                     const Icon = kindIcon[item.kind] || CircleDot
                     return (
                       <li key={item.id}>
@@ -192,9 +213,14 @@ export function Topbar({ onMenu, onNewReview, currentPath }) {
                       </li>
                     )
                   })}
+                  {notifications.length === 0 && (
+                    <li style={{ padding: '16px', color: 'var(--ink-soft)', fontSize: '13px' }}>
+                      No recent activity on your drafts.
+                    </li>
+                  )}
                 </ul>
                 <button className="popover__footer" onClick={() => { setOpenMenu(null); navigate('/reviews') }}>
-                  Open the review queue <ChevronRight size={14} />
+                  {isLead ? 'Open the review queue' : 'View my submissions'} <ChevronRight size={14} />
                 </button>
               </AnimatedPopover>
             ) : null}
