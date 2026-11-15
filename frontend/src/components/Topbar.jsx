@@ -45,6 +45,7 @@ function AnimatedPopover({ className = '', children }) {
 
 const titles = [
   ['/', 'Overview'],
+  ['/studio', 'Creator Studio'],
   ['/reviews', 'Reviews'],
   ['/guidelines', 'Guidelines'],
   ['/assets', 'Brand assets'],
@@ -60,7 +61,7 @@ const kindIcon = {
 }
 
 export function Topbar({ onMenu, onNewReview, currentPath }) {
-  const { data, user, logout, toast } = useApp()
+  const { data, user, logout, toast, currentRole, switchRole, isLead } = useApp()
   const navigate = useNavigate()
   const location = useLocation()
   const [paletteOpen, setPaletteOpen] = useState(false)
@@ -211,7 +212,7 @@ export function Topbar({ onMenu, onNewReview, currentPath }) {
               <Avatar name={user.username} />
               <span className="user-chip__copy">
                 <strong>{user.username}</strong>
-                <small>Member</small>
+                <small>{isLead ? 'Governance Lead' : 'Team Member'}</small>
               </span>
               <ChevronDown size={14} />
             </button>
@@ -224,6 +225,30 @@ export function Topbar({ onMenu, onNewReview, currentPath }) {
                     <p>{user.email}</p>
                   </div>
                 </div>
+
+                <div className="popover__role-switch">
+                  <span className="popover__role-label">Active Role:</span>
+                  <div className="role-switch-pills">
+                    <button
+                      type="button"
+                      className={cx('role-pill', !isLead && 'is-active')}
+                      onClick={() => switchRole('creator')}
+                    >
+                      Team Member
+                    </button>
+                    <button
+                      type="button"
+                      className={cx('role-pill', isLead && 'is-active')}
+                      onClick={() => switchRole('lead')}
+                    >
+                      Governance Lead
+                    </button>
+                  </div>
+                </div>
+
+                <button onClick={() => { setOpenMenu(null); navigate('/studio') }}>
+                  <Sparkles size={15} /> Creator Studio
+                </button>
                 <button onClick={() => { setOpenMenu(null); navigate('/settings') }}>
                   <Settings size={15} /> Workspace settings
                 </button>
@@ -235,7 +260,7 @@ export function Topbar({ onMenu, onNewReview, currentPath }) {
                 </button>
                 <div className="popover__meta">
                   <span>Aster &amp; Oak</span>
-                  <span>Member</span>
+                  <span>{isLead ? 'Lead / Higher-up' : 'Team Member / Creator'}</span>
                 </div>
               </AnimatedPopover>
             ) : null}

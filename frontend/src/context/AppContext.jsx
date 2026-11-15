@@ -8,6 +8,7 @@ export function AppProvider({ children }) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [connected, setConnected] = useState(false)
+  const [currentRole, setCurrentRole] = useState(() => localStorage.getItem('klarity_role') || 'creator')
   const [toasts, setToasts] = useState([])
   const timers = useRef(new Map())
   const toast = useCallback((message, tone = 'good') => {
@@ -72,15 +73,39 @@ export function AppProvider({ children }) {
       throw error
     }
   }
+
+  const switchRole = (newRole) => {
+    setCurrentRole(newRole)
+    localStorage.setItem('klarity_role', newRole)
+    toast(newRole === 'lead' ? 'Switched to Governance Lead (Higher-up)' : 'Switched to Employee / Team Member', 'good')
+  }
+
+  const isLead = currentRole === 'lead'
+
   return <AppContext.Provider value={{
     user, data, loading, connected, toasts, toast, dismissToast, refresh, authenticate, logout,
     currentUser: user?.username || '',
+    currentRole,
+    switchRole,
+    isLead,
     createSubmission: payload => mutate(() => api.createSubmission(payload), 'Review complete. The report is ready.'),
     reviewSubmission: (id, action, comment) => mutate(() => api.reviewSubmission(id, {
       action, comment: comment || null, performed_by: user.username,
     }), 'Review decision saved.'),
-    createGuideline: payload => mutate(() => api.createGuideline(payload), 'Guideline published.'),
-    updateGuideline: (id, payload) => mutate(() => api.updateGuideline(id, payload), 'Guideline updated.'),
+    createGuideline: payload => {
+      if (!isLead) {
+        toast('Only Brand Leads and Higher-ups can author guidelines.', 'warn')
+        throw new Error('Unauthorized: higherups and leads author guidelines.')
+      }
+      return mutate(() => api.createGuideline(payload), 'Guideline published.')
+    },
+    updateGuideline: (id, payload) => {
+      if (!isLead) {
+        toast('Only Brand Leads and Higher-ups can edit guidelines.', 'warn')
+        throw new Error('Unauthorized: higherups and leads author guidelines.')
+      }
+      return mutate(() => api.updateGuideline(id, payload), 'Guideline updated.')
+    },
   }}>{children}</AppContext.Provider>
 }
 

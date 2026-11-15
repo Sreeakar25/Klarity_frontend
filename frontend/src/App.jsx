@@ -8,6 +8,7 @@ import { ToastRegion } from './components/UI'
 import { useApp } from './context/AppContext'
 import { animatePageEnter } from './lib/animations'
 import { Dashboard } from './pages/Dashboard'
+import { CreatorStudioPage } from './pages/CreatorStudioPage'
 import { Reviews } from './pages/Reviews'
 import { ReviewDetail } from './pages/ReviewDetail'
 import { Guidelines } from './pages/Guidelines'
@@ -101,6 +102,7 @@ function AppShell() {
           <div ref={pageRef} key={location.pathname} className="page-view-wrapper">
             <Routes location={location}>
               <Route path="/" element={<Dashboard onNewReview={() => setReviewOpen(true)} />} />
+              <Route path="/studio" element={<CreatorStudioPage onNewReview={() => setReviewOpen(true)} />} />
               <Route path="/reviews" element={<Reviews onNewReview={() => setReviewOpen(true)} />} />
               <Route path="/reviews/:id" element={<ReviewDetail />} />
               <Route path="/guidelines" element={<Guidelines />} />
