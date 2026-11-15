@@ -690,12 +690,12 @@ def seed_database() -> None:
 
         db.add_all(
             [
-                User(name="Kruthik Kamegaonkar", email="kruthik@localhost5000.dev", role=UserRole.admin),
-                User(name="Ashwik Saxena", email="ashwik@localhost5000.dev", role=UserRole.reviewer),
-                User(name="G N Sreekar", email="sreekar@localhost5000.dev", role=UserRole.creator),
+                User(name="Ashwik Saxena", email="ashwik@topper", role=UserRole.owner),
+                User(name="Kruthik Kamegaonkar", email="kruthik@localhost5000.dev", role=UserRole.owner),
                 User(name="Maddi Abhinav", email="abhinav@localhost5000.dev", role=UserRole.reviewer),
                 User(name="Maya Iyer", email="maya@asterandoak.studio", role=UserRole.reviewer),
-                User(name="Rohan Mehta", email="rohan@asterandoak.studio", role=UserRole.creator),
+                User(name="G N Sreekar", email="sreekar@localhost5000.dev", role=UserRole.member),
+                User(name="Rohan Mehta", email="rohan@asterandoak.studio", role=UserRole.member),
             ]
         )
 

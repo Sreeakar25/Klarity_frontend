@@ -23,6 +23,7 @@ class Account(Base):
     username = Column(String(80), unique=True, nullable=False)
     email = Column(String(254), unique=True, nullable=False)
     password_hash = Column(String(256), nullable=False)
+    role = Column(String(30), nullable=False, default="owner")
 
 
 class LoginSession(Base):
@@ -44,14 +45,15 @@ def seed_test_account():
             or_(Account.username == "ashwik", Account.email == "ashwik@topper.local", Account.email == "ashwik@topper", Account.email == "ashwik@klarity.local")
         ).first()
         if not ashwik:
-            db.add(Account(username="ashwik", email="ashwik@topper", password_hash=hash_password("klarity")))
+            db.add(Account(username="ashwik", email="ashwik@topper", password_hash=hash_password("klarity"), role="owner"))
         else:
             ashwik.username = "ashwik"
             ashwik.email = "ashwik@topper"
             ashwik.password_hash = hash_password("klarity")
+            ashwik.role = "owner"
 
         if not db.query(Account).filter_by(username="sunless").first():
-            db.add(Account(username="sunless", email="sunless@klarity.local", password_hash=hash_password("klarity")))
+            db.add(Account(username="sunless", email="sunless@klarity.local", password_hash=hash_password("klarity"), role="reviewer"))
         db.commit()
 
 
@@ -76,7 +78,12 @@ def current_account(request: Request, db: Session = Depends(get_db)):
 
 
 def public_account(account):
-    return {"id": account.id, "username": account.username, "email": account.email}
+    return {
+        "id": account.id,
+        "username": account.username,
+        "email": account.email,
+        "role": getattr(account, "role", "owner") or "owner",
+    }
 
 
 def start_session(account, request, response, db):
@@ -129,7 +136,7 @@ def login(payload: LoginRequest, request: Request, response: Response, db: Sessi
     identifier = payload.identifier.strip().lower()
     account = db.query(Account).filter(or_(Account.username == identifier, Account.email == identifier)).first()
     if not account and identifier in ("ashwik@topper", "ashwik") and payload.password == "klarity":
-        account = Account(username="ashwik", email="ashwik@topper", password_hash=hash_password("klarity"))
+        account = Account(username="ashwik", email="ashwik@topper", password_hash=hash_password("klarity"), role="owner")
         db.add(account)
         db.commit()
         db.refresh(account)

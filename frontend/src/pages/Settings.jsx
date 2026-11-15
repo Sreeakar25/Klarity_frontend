@@ -34,12 +34,12 @@ const defaultSettings = {
 }
 
 const team = [
-  { name: 'Kruthik Kamegaonkar', email: 'kruthik@localhost5000.dev', role: 'Admin', status: 'Active' },
-  { name: 'Ashwik Saxena (Topper)', email: 'ashwik@localhost5000.dev', role: 'Admin', status: 'Active' },
-  { name: 'Maddi Abhinav', email: 'abhinav@localhost5000.dev', role: 'Admin', status: 'Active' },
-  { name: 'Maya Iyer', email: 'maya@asterandoak.studio', role: 'Reviewer', status: 'Active' },
-  { name: 'G N Sreekar', email: 'sreekar@localhost5000.dev', role: 'Creator', status: 'Active' },
-  { name: 'Rohan Mehta', email: 'rohan@asterandoak.studio', role: 'Creator', status: 'Invited' },
+  { name: 'Ashwik Saxena (Topper)', email: 'ashwik@topper', role: 'Stage 1 · Brand Owner', status: 'Active' },
+  { name: 'Kruthik Kamegaonkar', email: 'kruthik@localhost5000.dev', role: 'Stage 1 · Brand Owner', status: 'Active' },
+  { name: 'Maddi Abhinav', email: 'abhinav@localhost5000.dev', role: 'Stage 2 · Reviewer', status: 'Active' },
+  { name: 'Maya Iyer', email: 'maya@asterandoak.studio', role: 'Stage 2 · Reviewer', status: 'Active' },
+  { name: 'G N Sreekar', email: 'sreekar@localhost5000.dev', role: 'Stage 3 · Team Member', status: 'Active' },
+  { name: 'Rohan Mehta', email: 'rohan@asterandoak.studio', role: 'Stage 3 · Team Member', status: 'Invited' },
 ]
 
 function ToggleRow({ label, description, checked, onChange }) {
@@ -288,8 +288,10 @@ export function Settings() {
             <div className="settings-note">
               <Workflow size={16} />
               <p>
-                Creators can submit and revise. Reviewers can approve, reject, and request changes. Admins can also
-                publish guidelines and manage the team.
+                <strong>3-Stage Governance Hierarchy:</strong><br />
+                <strong>1. Brand Owner:</strong> Holds final approval authority, publishes guidelines, and manages workspace settings.<br />
+                <strong>2. Reviewer:</strong> Audits submissions, verifies guideline evidence, and requests changes.<br />
+                <strong>3. Team Member:</strong> Drafts content, runs pre-flight checks, and submits pieces for review.
               </p>
             </div>
           </Panel>

@@ -59,9 +59,11 @@ class ActionType(str, enum.Enum):
 
 
 class UserRole(str, enum.Enum):
-    creator = "creator"
-    reviewer = "reviewer"
-    admin = "admin"
+    owner = "owner"  # Stage 1: Brand Owner
+    reviewer = "reviewer"  # Stage 2: Reviewer
+    member = "member"  # Stage 3: Team Member
+    creator = "creator"  # Alias for Team Member
+    admin = "admin"  # Alias for Brand Owner
 
 
 # ---------------------------------------------------------------------------

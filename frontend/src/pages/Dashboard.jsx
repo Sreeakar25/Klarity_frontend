@@ -109,7 +109,7 @@ function ActivityIcon({ kind }) {
 export function Dashboard({ onNewReview }) {
   const { data, currentUser, toast } = useApp()
   const { stats, submissions, trends, issue_breakdown: breakdown, coverage, activity } = data
-  const [roleMode, setRoleMode] = useState('creator')
+  const [roleMode, setRoleMode] = useState('owner')
   const [period, setPeriod] = useState('30d')
 
   const days = period === '7d' ? 7 : period === '14d' ? 14 : 30
@@ -180,14 +180,17 @@ export function Dashboard({ onNewReview }) {
             {greeting()}, {currentUser}<span className="accent-dot">.</span>
           </h1>
           <p>
-            {roleMode === 'creator' ? (
+            {roleMode === 'member' ? (
               <>
-                Pre-flight your draft against Aster &amp; Oak brand rules before submitting for formal editorial review.
+                <strong>Stage 3 · Team Member:</strong> Pre-flight your draft against Aster &amp; Oak brand rules before submitting for editorial review.
+              </>
+            ) : roleMode === 'reviewer' ? (
+              <>
+                <strong>Stage 2 · Reviewer:</strong> Audit incoming submissions, verify guideline evidence, provide feedback, and request changes.
               </>
             ) : (
               <>
-                Aster &amp; Oak is holding at <strong>{Math.round(stats.avg_score)}/100</strong> across 12 channels.
-                Here is where the next decision is waiting.
+                <strong>Stage 1 · Brand Owner:</strong> Full brand governance oversight across 12 channels holding at <strong>{Math.round(stats.avg_score)}/100</strong>.
               </>
             )}
           </p>
@@ -198,8 +201,9 @@ export function Dashboard({ onNewReview }) {
             value={roleMode}
             onChange={setRoleMode}
             options={[
-              { value: 'creator', label: 'Creator Studio' },
-              { value: 'governance', label: 'Governance Lead' },
+              { value: 'owner', label: '1. Brand Owner' },
+              { value: 'reviewer', label: '2. Reviewer' },
+              { value: 'member', label: '3. Team Member' },
             ]}
           />
           <span className="date-stamp">
@@ -208,7 +212,7 @@ export function Dashboard({ onNewReview }) {
         </div>
       </section>
 
-      {roleMode === 'creator' ? (
+      {roleMode === 'member' ? (
         <CreatorStudio submissions={submissions} onNewReview={onNewReview} toast={toast} />
       ) : (
         <>
