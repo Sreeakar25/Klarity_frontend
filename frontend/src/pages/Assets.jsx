@@ -25,7 +25,18 @@ import {
   X,
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
-import { Button, Drawer, EmptyState, Field, Panel, Segmented, Select } from '../components/UI'
+import {
+  Badge,
+  Button,
+  CodeBlock,
+  Drawer,
+  EmptyState,
+  Field,
+  Panel,
+  Segmented,
+  Select,
+  StatusDot,
+} from '../components/UI'
 import { cx } from '../lib/utils'
 import {
   defaultRole,
@@ -1790,6 +1801,12 @@ export function Assets() {
                       Export .css
                     </Button>
                   </div>
+
+                  <CodeBlock
+                    filename={`${selected.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-tokens.css`}
+                    language="css"
+                    code={generateCssVariables(selected.swatches || swatches)}
+                  />
                 </div>
               )}
 

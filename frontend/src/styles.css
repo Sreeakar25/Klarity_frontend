@@ -9772,3 +9772,332 @@ kbd {
   font-size: 11px;
   color: var(--ink-soft);
 }
+
+/* ==========================================================================
+   Knowns UI Component Suite (https://ui.knowns.dev/docs/group/components)
+   ========================================================================== */
+
+/* Kbd */
+.kn-kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  min-width: 20px;
+  padding: 0 5px;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  background: var(--paper-raised);
+  color: var(--muted);
+  box-shadow: 0 1px 0 0.5px rgba(59, 36, 24, 0.08);
+  vertical-align: middle;
+}
+
+/* StatusDot */
+.kn-status-dot {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.kn-status-dot--xs {
+  width: 6px;
+  height: 6px;
+}
+
+.kn-status-dot--sm {
+  width: 8px;
+  height: 8px;
+}
+
+.kn-status-dot--md {
+  width: 10px;
+  height: 10px;
+}
+
+.kn-status-dot__circle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: block;
+}
+
+.kn-status-dot--online .kn-status-dot__circle,
+.kn-status-dot--finished .kn-status-dot__circle {
+  background: #22c55e;
+}
+
+.kn-status-dot--idle .kn-status-dot__circle {
+  background: #94a3b8;
+}
+
+.kn-status-dot--busy .kn-status-dot__circle {
+  background: var(--sage);
+}
+
+.kn-status-dot--blocked .kn-status-dot__circle,
+.kn-status-dot--warning .kn-status-dot__circle {
+  background: var(--clay);
+}
+
+.kn-status-dot--failed .kn-status-dot__circle {
+  background: var(--danger);
+}
+
+@keyframes kn-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.75;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+.kn-status-dot.is-pulsing .kn-status-dot__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: inherit;
+  animation: kn-pulse 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+.kn-status-dot--online.is-pulsing .kn-status-dot__ring {
+  background: rgba(34, 197, 94, 0.6);
+}
+
+.kn-status-dot--busy.is-pulsing .kn-status-dot__ring {
+  background: rgba(41, 142, 228, 0.6);
+}
+
+/* Badge */
+.kn-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+  transition: all 120ms ease;
+}
+
+.kn-badge--sm {
+  padding: 2px 7px;
+  font-size: 11px;
+}
+
+.kn-badge--md {
+  padding: 3px 10px;
+  font-size: 12.5px;
+}
+
+.kn-badge--neutral {
+  background: var(--cream-deep);
+  color: var(--ink-soft);
+  border: 1px solid var(--line);
+}
+
+.kn-badge--outline {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+
+.kn-badge--success {
+  background: var(--good-soft);
+  color: #24582e;
+  border: 1px solid rgba(46, 125, 50, 0.2);
+}
+
+.kn-badge--warning {
+  background: #faebd2;
+  color: var(--clay-deep);
+  border: 1px solid rgba(184, 91, 53, 0.2);
+}
+
+.kn-badge--destructive {
+  background: var(--danger-soft);
+  color: var(--danger-text);
+  border: 1px solid rgba(199, 62, 49, 0.2);
+}
+
+.kn-badge--sage {
+  background: var(--sage-soft);
+  color: var(--sage-deep);
+  border: 1px solid rgba(41, 142, 228, 0.22);
+}
+
+.kn-badge__icon {
+  flex-shrink: 0;
+}
+
+/* Shimmer Text */
+.kn-shimmer-text {
+  background: linear-gradient(90deg, var(--ink) 0%, var(--sage) 50%, var(--ink) 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: kn-shimmer 2.5s infinite linear;
+  display: inline-block;
+  font-weight: 700;
+}
+
+@keyframes kn-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Card Primitives */
+.kn-card {
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: transform 140ms var(--ease-out), box-shadow 140ms var(--ease-out);
+}
+
+.kn-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.kn-card-header {
+  padding: 18px 22px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kn-card-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0;
+}
+
+.kn-card-desc {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.kn-card-content {
+  padding: 0 22px 18px;
+  flex: 1;
+}
+
+.kn-card-footer {
+  padding: 12px 22px;
+  background: var(--paper);
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* CodeBlock */
+.kn-code-block {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--paper);
+  overflow: hidden;
+  font-size: 13px;
+  font-family: var(--font-mono, monospace);
+  margin: 12px 0;
+}
+
+.kn-code-block__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: var(--cream-deep);
+  border-bottom: 1px solid var(--line);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.kn-code-block__copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.kn-code-block__copy:hover {
+  background: var(--cream);
+  color: var(--ink);
+}
+
+.kn-code-block__pre {
+  padding: 14px 16px;
+  margin: 0;
+  overflow-x: auto;
+  line-height: 1.6;
+}
+
+.kn-code-block__line {
+  display: flex;
+  gap: 16px;
+}
+
+.kn-code-block__num {
+  width: 20px;
+  text-align: right;
+  color: var(--faint);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.kn-code-block__text {
+  color: var(--ink-soft);
+}
+
+/* TokenStream */
+.kn-token-stream {
+  position: relative;
+  display: inline;
+}
+
+.kn-token-stream__caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background: var(--sage);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: kn-blink 0.8s infinite;
+}
+
+@keyframes kn-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}

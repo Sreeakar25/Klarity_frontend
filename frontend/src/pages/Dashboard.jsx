@@ -20,6 +20,7 @@ import { PulseChart } from '../components/Charts'
 import { AnimatedValue } from '../components/AnimatedValue'
 import { animateHorizontalBars } from '../lib/animations'
 import {
+  Badge,
   Button,
   CategoryTag,
   Meter,
@@ -27,6 +28,8 @@ import {
   ScorePill,
   SectionHead,
   Segmented,
+  ShimmerText,
+  StatusDot,
   StatusPill,
 } from '../components/UI'
 import {
@@ -62,6 +65,7 @@ function Metric({ label, value, delta, detail, positiveIsGood = true, suffix = '
       </div>
       <div className="metric__foot">
         <span className={cx('delta', good ? 'delta--good' : 'delta--warn')}>
+          <StatusDot status={good ? 'online' : 'warning'} size="xs" />
           {positive ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}
           {deltaLabel(Math.abs(delta), '')}
         </span>
@@ -73,18 +77,22 @@ function Metric({ label, value, delta, detail, positiveIsGood = true, suffix = '
 
 function QueueRow({ item, index }) {
   const report = latestReport(item)
+  const score = report?.overall_score ?? 0
   return (
     <li className="queue-row">
       <Link to={`/reviews/${item.id}`}>
-        <span className="queue-row__index">{String(index + 1).padStart(2, '0')}</span>
+        <span className="queue-row__index">
+          <StatusDot status={score >= 85 ? 'online' : score >= 70 ? 'warning' : 'failed'} size="xs" />
+          {String(index + 1).padStart(2, '0')}
+        </span>
         <span className="queue-row__copy">
           <strong>{item.title}</strong>
           <small>
             {item.submitted_by.split(' ')[0]} · {timeAgo(item.submitted_at)}
           </small>
         </span>
-        <span className={cx('queue-row__score', `is-${scoreTone(report?.overall_score ?? 0)}`)}>
-          {Math.round(report?.overall_score ?? 0)}
+        <span className={cx('queue-row__score', `is-${scoreTone(score)}`)}>
+          {Math.round(score)}
         </span>
         <ArrowUpRight size={15} className="queue-row__arrow" />
       </Link>
@@ -177,6 +185,9 @@ export function Dashboard({ onNewReview }) {
           </p>
         </div>
         <div className="page-hero__actions">
+          <Badge variant="sage" dot dotStatus="online">
+            <ShimmerText>Governance Active</ShimmerText>
+          </Badge>
           <span className="date-stamp">
             <Calendar size={14} /> {todayLabel}
           </span>

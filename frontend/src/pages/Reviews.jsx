@@ -15,11 +15,14 @@ import {
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import {
+  Badge,
   Button,
   EmptyState,
+  Kbd,
   Panel,
   ScorePill,
   Select,
+  StatusDot,
   StatusPill,
   Tabs,
 } from '../components/UI'
@@ -223,7 +226,7 @@ export function Reviews({ onNewReview }) {
                         </td>
                         <td>
                           <span className="owner-cell">
-                            <span className="owner-cell__dot" />
+                            <StatusDot status="idle" size="xs" />
                             {item.submitted_by}
                           </span>
                         </td>

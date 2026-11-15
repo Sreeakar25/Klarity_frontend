@@ -5,6 +5,7 @@ import { ArrowRight, BookOpen, CornerDownLeft, FileClock, Search, Sparkles } fro
 import { useApp } from '../context/AppContext'
 import { cx, latestReport, statusMeta } from '../lib/utils'
 import { animatePaletteIn, animatePaletteOut } from '../lib/animations'
+import { Kbd } from './UI'
 
 const pageRoutes = [
   { label: 'Overview', path: '/', description: 'Brand health, queue, recent reviews' },
@@ -165,11 +166,11 @@ export function CommandPalette({ open, onClose }) {
         </div>
         <footer className="palette__foot">
           <span>
-            <kbd>↑</kbd>
-            <kbd>↓</kbd> to move
+            <Kbd>↑</Kbd>
+            <Kbd>↓</Kbd> to move
           </span>
           <span>
-            <kbd>↵</kbd> to open
+            <Kbd>↵</Kbd> to open
           </span>
           <span className="palette__foot-brand">Klarity search</span>
         </footer>

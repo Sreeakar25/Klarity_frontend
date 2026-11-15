@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import {
+  Badge,
   Button,
   CategoryTag,
   Drawer,
@@ -20,6 +21,7 @@ import {
   Field,
   Panel,
   Select,
+  StatusDot,
   Tabs,
 } from '../components/UI'
 import { categoryLabels, cx, formatDate, timeAgo } from '../lib/utils'
@@ -236,9 +238,9 @@ export function Guidelines() {
           <p>The source of truth behind every review. Clear rules, specific examples, visible ownership.</p>
         </div>
         <div className="page-head__actions">
-          <span className="guideline-stat">
-            <strong>{data.guidelines.length}</strong> active guidelines
-          </span>
+          <Badge variant="sage" dot dotStatus="online">
+            <strong>{data.guidelines.length}</strong> active rules
+          </Badge>
           <Button icon={Plus} onClick={openNew}>
             New guideline
           </Button>
