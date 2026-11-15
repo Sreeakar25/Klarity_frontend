@@ -28,6 +28,7 @@ class ContentType(str, enum.Enum):
     image = "image"
     video = "video"
     html = "html"
+    document = "document"
 
 
 class SubmissionStatus(str, enum.Enum):

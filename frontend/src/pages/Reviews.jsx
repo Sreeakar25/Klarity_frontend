@@ -5,6 +5,7 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
+  FileCheck2,
   FileText,
   Image,
   LayoutTemplate,
@@ -36,7 +37,7 @@ import {
   typeLabels,
 } from '../lib/utils'
 
-const typeIcon = { text: FileText, html: LayoutTemplate, image: Image }
+const typeIcon = { text: FileText, html: LayoutTemplate, document: FileCheck2, image: Image }
 
 const statusTabs = [
   { value: 'all', label: 'All' },

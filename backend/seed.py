@@ -284,6 +284,23 @@ CURATED = [
         ],
     },
     {
+        "title": "Corporate Sustainability & Governance Whitepaper",
+        "type": ContentType.document,
+        "status": SubmissionStatus.approved,
+        "owner": "Ashwik Saxena",
+        "days_ago": 3.1,
+        "content": (
+            "Aster & Oak Corporate Governance Report · FY26 Executive Brief.\n\n"
+            "This whitepaper outlines our supply chain traceability across 14 family-owned mills in Portugal and Lithuania. "
+            "Every bolt of linen is OEKO-TEX Standard 100 certified, with zero fluorocarbon water-repellent chemistries. "
+            "Our repair circularity programme diverted 4.2 tonnes of textile offcuts from landfill in 2025. "
+            "All cited figures are audited by Third-Party Environmental Verifiers (ISO 14064-3 compliant)."
+        ),
+        "score": 98,
+        "summary": "Exemplary brand documentation. All sustainability claims are certified, sourced, and legally substantiated.",
+        "issues": [],
+    },
+    {
         "title": "Holiday gifting press release",
         "type": ContentType.text,
         "status": SubmissionStatus.approved,

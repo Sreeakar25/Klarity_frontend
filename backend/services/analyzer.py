@@ -202,6 +202,23 @@ def analyse_content(
                 )
             )
 
+    if content_type == ContentType.document:
+        doc_words = len(content_text.split())
+        if doc_words < 15:
+            issues.append(
+                _issue(
+                    guidelines,
+                    IssueSeverity.warning,
+                    IssueCategory.facts,
+                    "Document structure incomplete",
+                    "Brand documentation and formal whitepapers require executive summaries and cited references.",
+                    "The uploaded document contains under 15 words or is missing standard body sections.",
+                    "Ensure the document contains an introduction, substantiated claims, and verified footnote citations.",
+                    guideline_hint="facts",
+                    guideline_category=GuidelineCategory.facts,
+                )
+            )
+
     if content_type == ContentType.image:
         issues.append(
             _issue(

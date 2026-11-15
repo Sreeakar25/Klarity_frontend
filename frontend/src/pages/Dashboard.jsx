@@ -8,6 +8,7 @@ import {
   Check,
   CircleDot,
   Clock3,
+  FileCheck2,
   FileClock,
   FileText,
   Image,
@@ -44,7 +45,7 @@ import {
   typeLabels,
 } from '../lib/utils'
 
-const typeIcon = { text: FileText, html: LayoutTemplate, image: Image }
+const typeIcon = { text: FileText, html: LayoutTemplate, document: FileCheck2, image: Image }
 
 const greeting = () => {
   const hour = new Date().getHours()

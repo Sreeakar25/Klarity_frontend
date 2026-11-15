@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Check, FileText, Image, LayoutTemplate, ScanSearch, Sparkles } from 'lucide-react'
+import { Check, FileCheck2, FileText, Image, LayoutTemplate, ScanSearch, Sparkles } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { Button, Drawer, Field } from './UI'
 
 const contentTypes = [
   { value: 'text', label: 'Copy', icon: FileText },
   { value: 'html', label: 'Page', icon: LayoutTemplate },
+  { value: 'document', label: 'Document', icon: FileCheck2 },
   { value: 'image', label: 'Visual', icon: Image },
 ]
 

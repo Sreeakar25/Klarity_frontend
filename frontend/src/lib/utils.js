@@ -25,6 +25,7 @@ export const categoryLabels = {
 export const typeLabels = {
   text: 'Copy',
   html: 'Page',
+  document: 'Document',
   image: 'Visual',
   video: 'Video',
 }
