@@ -18,6 +18,7 @@ import {
 import { useApp } from '../context/AppContext'
 import { PulseChart } from '../components/Charts'
 import { AnimatedValue } from '../components/AnimatedValue'
+import { CreatorStudio } from '../components/CreatorStudio'
 import { animateHorizontalBars } from '../lib/animations'
 import {
   Button,
@@ -106,8 +107,9 @@ function ActivityIcon({ kind }) {
 }
 
 export function Dashboard({ onNewReview }) {
-  const { data, currentUser } = useApp()
+  const { data, currentUser, toast } = useApp()
   const { stats, submissions, trends, issue_breakdown: breakdown, coverage, activity } = data
+  const [roleMode, setRoleMode] = useState('creator')
   const [period, setPeriod] = useState('30d')
 
   const days = period === '7d' ? 7 : period === '14d' ? 14 : 30
@@ -178,18 +180,39 @@ export function Dashboard({ onNewReview }) {
             {greeting()}, {currentUser}<span className="accent-dot">.</span>
           </h1>
           <p>
-            Aster &amp; Oak is holding at <strong>{Math.round(stats.avg_score)}/100</strong> across 12 channels.
-            Here is where the next decision is waiting.
+            {roleMode === 'creator' ? (
+              <>
+                Pre-flight your draft against Aster &amp; Oak brand rules before submitting for formal editorial review.
+              </>
+            ) : (
+              <>
+                Aster &amp; Oak is holding at <strong>{Math.round(stats.avg_score)}/100</strong> across 12 channels.
+                Here is where the next decision is waiting.
+              </>
+            )}
           </p>
         </div>
         <div className="page-hero__actions">
+          <Segmented
+            label="Workspace perspective"
+            value={roleMode}
+            onChange={setRoleMode}
+            options={[
+              { value: 'creator', label: 'Creator Studio' },
+              { value: 'governance', label: 'Governance Lead' },
+            ]}
+          />
           <span className="date-stamp">
             <Calendar size={14} /> {todayLabel}
           </span>
         </div>
       </section>
 
-      <section className="metric-strip" aria-label="Workspace metrics">
+      {roleMode === 'creator' ? (
+        <CreatorStudio submissions={submissions} onNewReview={onNewReview} toast={toast} />
+      ) : (
+        <>
+          <section className="metric-strip" aria-label="Workspace metrics">
         <Metric
           label="Content reviewed"
           value={formatCount(stats.total_submissions)}
@@ -490,6 +513,8 @@ export function Dashboard({ onNewReview }) {
           </ol>
         </Panel>
       </section>
+      </>
+      )}
 
       <footer className="page-foot">
         <span>Klarity v0.1 · localhost:5000</span>

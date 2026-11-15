@@ -36,11 +36,78 @@ const categories = [
 
 const priorityLabels = { 5: 'Critical', 4: 'High', 3: 'Standard', 2: 'Reference', 1: 'Reference' }
 
+const CATEGORY_VOICE_DEFAULTS = {
+  tone: {
+    soundsLike:
+      'We fire each vessel in small batches from local clay, ensuring durable, tactile homeware that lasts generations.',
+    avoid:
+      'Our revolutionary eco-friendly homeware delivers seamless, disruptive synergy.',
+    soundsTip: 'Uses concrete sensory nouns, active verbs, and calm, unhurried cadence.',
+    avoidTip: 'Avoids tech buzzwords, exclamation stacks, or hyperbolic claims.',
+  },
+  terminology: {
+    soundsLike:
+      'Use: linen, flax, maker, repair, keep, lived-in, considered, patina, tactile.',
+    avoid:
+      'Avoid: seamless, game-changing, revolutionary, eco-friendly, utilize, leverage, best-in-class.',
+    soundsTip: 'Specific observations unique to Aster & Oak craftsmanship.',
+    avoidTip: 'Interchangeable corporate filler words that erode editorial voice.',
+  },
+  facts: {
+    soundsLike:
+      'European flax certified under Masters of Linen® standard (OEKO-TEX Certificate #49182).',
+    avoid:
+      '100% green and eco-friendly with net-zero carbon footprint.',
+    soundsTip: 'Include precise certification numbers, harvest years, and batch IDs.',
+    avoidTip: 'Vague sustainability claims trigger strict ESG compliance flags.',
+  },
+  visual: {
+    soundsLike:
+      'Unfiltered ambient daylight, muted organic sage backdrops (#EBF3EC), tactile textures and linen folds.',
+    avoid:
+      'Neon high-saturation gradients, studio lens flare, AI-gloss smoothing, floating product drop shadows.',
+    soundsTip: 'Authentic physical presence with gentle natural light.',
+    avoidTip: 'Overly synthetic or high-gloss rendering that breaks the artisanal palette.',
+  },
+}
+
+function parseGuidelineContent(raw = '', category = 'tone') {
+  let main = raw
+  let soundsLike = ''
+  let avoid = ''
+
+  const soundsMatch = raw.match(/### Sounds like this\s*\n([\s\S]*?)(?=\n### |$)/i)
+  if (soundsMatch) {
+    soundsLike = soundsMatch[1].trim()
+    main = main.replace(soundsMatch[0], '')
+  }
+
+  const avoidMatch = raw.match(/### What to avoid\s*\n([\s\S]*?)(?=\n### |$)/i)
+  if (avoidMatch) {
+    avoid = avoidMatch[1].trim()
+    main = main.replace(avoidMatch[0], '')
+  }
+
+  const fallback = CATEGORY_VOICE_DEFAULTS[category] || CATEGORY_VOICE_DEFAULTS.tone
+
+  return {
+    content: main.trim(),
+    soundsLike: soundsLike || fallback.soundsLike,
+    avoid: avoid || fallback.avoid,
+    rawSoundsLike: soundsLike,
+    rawAvoid: avoid,
+    soundsTip: fallback.soundsTip,
+    avoidTip: fallback.avoidTip,
+  }
+}
+
 const emptyForm = {
   title: '',
   category: 'tone',
   priority: 3,
   content: '',
+  soundsLike: '',
+  avoid: '',
 }
 
 function GuidelineDrawer({ open, onClose, editing }) {
@@ -54,16 +121,19 @@ function GuidelineDrawer({ open, onClose, editing }) {
   const targetKey = `${open}-${editing?.id || 'new'}`
   if (initialised !== targetKey) {
     setInitialised(targetKey)
-    setForm(
-      editing
-        ? {
-            title: editing.title,
-            category: editing.category,
-            priority: editing.priority,
-            content: editing.content,
-          }
-        : emptyForm,
-    )
+    if (editing) {
+      const parsed = parseGuidelineContent(editing.content, editing.category)
+      setForm({
+        title: editing.title,
+        category: editing.category,
+        priority: editing.priority,
+        content: parsed.content,
+        soundsLike: parsed.rawSoundsLike || '',
+        avoid: parsed.rawAvoid || '',
+      })
+    } else {
+      setForm(emptyForm)
+    }
     setErrors({})
   }
 
@@ -76,18 +146,26 @@ function GuidelineDrawer({ open, onClose, editing }) {
     event.preventDefault()
     const next = {}
     if (!form.title.trim()) next.title = 'A guideline needs a short title.'
-    if (form.content.trim().length < 30) next.content = 'Write at least a sentence of guidance.'
+    if (form.content.trim().length < 20) next.content = 'Write at least a sentence of guidance.'
     if (Object.keys(next).length) {
       setErrors(next)
       return
     }
     setBusy(true)
     try {
+      let combinedContent = form.content.trim()
+      if (form.soundsLike?.trim()) {
+        combinedContent += `\n\n### Sounds like this\n${form.soundsLike.trim()}`
+      }
+      if (form.avoid?.trim()) {
+        combinedContent += `\n\n### What to avoid\n${form.avoid.trim()}`
+      }
+
       const payload = {
         title: form.title.trim(),
         category: form.category,
         priority: Number(form.priority),
-        content: form.content.trim(),
+        content: combinedContent,
       }
       if (editing) await updateGuideline(editing.id, payload)
       else await createGuideline(payload)
@@ -160,16 +238,47 @@ function GuidelineDrawer({ open, onClose, editing }) {
           label="Guidance"
           htmlFor="guideline-content"
           error={errors.content}
-          hint="Write the rule and one concrete example. Specific guidance produces specific suggestions."
+          hint="Write the rule and core intent. Specific guidance produces specific suggestions."
         >
           <textarea
             id="guideline-content"
-            rows={10}
+            rows={5}
             value={form.content}
             onChange={(event) => update('content', event.target.value)}
-            placeholder="What must the team do? What should they avoid? What does a good example look like?"
+            placeholder="What must the team do? What should they avoid? What is the core rule?"
           />
         </Field>
+
+        {/* Structured Voice & Tone Guidance: "Sounds like this" */}
+        <Field
+          label="Voice & Tone: Sounds like this (Approved examples / Do's)"
+          htmlFor="guideline-sounds-like"
+          hint="Give creators the exact rhythm, cadence, and approved phrasing to imitate."
+        >
+          <textarea
+            id="guideline-sounds-like"
+            rows={3}
+            value={form.soundsLike}
+            onChange={(event) => update('soundsLike', event.target.value)}
+            placeholder='e.g. "We fire each vessel in small batches from local clay, ensuring durable, tactile homeware that lasts generations."'
+          />
+        </Field>
+
+        {/* Structured Voice & Tone Guidance: "What to avoid" */}
+        <Field
+          label="What to avoid (Unapproved phrasing / Don'ts)"
+          htmlFor="guideline-avoid"
+          hint="Terms, clichés, or unverified claims that will be flagged during pre-flight checks."
+        >
+          <textarea
+            id="guideline-avoid"
+            rows={3}
+            value={form.avoid}
+            onChange={(event) => update('avoid', event.target.value)}
+            placeholder='e.g. "Avoid: seamless, revolutionary, game-changing, eco-friendly, utilize, best-in-class."'
+          />
+        </Field>
+
         <div className="review-form__hint">
           <ShieldCheck size={16} />
           <div>
@@ -334,9 +443,49 @@ export function Guidelines() {
             </header>
 
             <div className="guideline-detail__body">
-              {selected.content.split(/\n{2,}/).map((paragraph, index) => (
+              {parseGuidelineContent(selected.content, selected.category).content.split(/\n{2,}/).map((paragraph, index) => (
                 <p key={index}>{paragraph}</p>
               ))}
+
+              {/* Voice & Tone Reference Cards: "Sounds like this" vs "What to avoid" */}
+              {(() => {
+                const parsed = parseGuidelineContent(selected.content, selected.category)
+                return (
+                  <div className="guideline-voice-cards">
+                    {/* Sounds like this (Approved) */}
+                    <div className="voice-card voice-card--approved">
+                      <div className="voice-card__head">
+                        <span className="voice-card__pill voice-card__pill--good">
+                          <Check size={13} /> Sounds like this (Approved voice)
+                        </span>
+                        <span className="voice-card__badge voice-card__badge--do">Do</span>
+                      </div>
+                      <div className="voice-card__content">
+                        <blockquote>&quot;{parsed.soundsLike}&quot;</blockquote>
+                        <p className="voice-card__hint">
+                          <strong>Cadence &amp; tone:</strong> {parsed.soundsTip}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* What to avoid (Flagged) */}
+                    <div className="voice-card voice-card--avoid">
+                      <div className="voice-card__head">
+                        <span className="voice-card__pill voice-card__pill--warn">
+                          <CircleAlert size={13} /> What to avoid (Flagged phrasing)
+                        </span>
+                        <span className="voice-card__badge voice-card__badge--dont">Avoid</span>
+                      </div>
+                      <div className="voice-card__content">
+                        <blockquote>&quot;{parsed.avoid}&quot;</blockquote>
+                        <p className="voice-card__hint">
+                          <strong>Risk:</strong> {parsed.avoidTip}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })()}
             </div>
 
             <div className="guideline-facts">
