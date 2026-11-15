@@ -112,10 +112,14 @@ export function CommandPalette({ open, onClose }) {
             placeholder="Search reviews, guidelines, pages…"
             aria-label="Search"
             onKeyDown={(event) => {
-              if (event.key === 'Enter' && results[0]) choose(results[0])
+              if (event.isComposing || event.keyCode === 229) return
+              if (event.key === 'Enter' && results[0]) {
+                event.preventDefault()
+                choose(results[0])
+              }
             }}
           />
-          <kbd>ESC</kbd>
+          <Kbd>ESC</Kbd>
         </div>
         <div className="palette__body">
           {results.length ? (

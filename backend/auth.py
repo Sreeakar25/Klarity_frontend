@@ -55,6 +55,9 @@ def seed_test_account():
 
 
 def check_origin(request: Request):
+    sec_fetch_site = request.headers.get("sec-fetch-site")
+    if sec_fetch_site == "cross-site":
+        raise HTTPException(403, "Cross-site request blocked by resource isolation policy")
     origin = request.headers.get("origin")
     if origin and origin not in CORS_ORIGINS and origin != str(request.base_url).rstrip("/"):
         raise HTTPException(403, "Origin not allowed")
@@ -145,3 +148,4 @@ def logout(request: Request, response: Response, db: Session = Depends(get_db)):
     db.query(LoginSession).filter_by(token_hash=hashlib.sha256(token.encode()).hexdigest()).delete()
     db.commit()
     response.delete_cookie("klarity_session", path="/")
+    response.headers["Clear-Site-Data"] = '"cookies", "storage", "cache"'
