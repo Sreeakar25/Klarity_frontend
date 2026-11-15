@@ -136,10 +136,6 @@ export function Sidebar({ open, onClose, onNewReview }) {
           <Sparkles size={18} strokeWidth={1.8} />
           <span>Product overview</span>
         </NavLink>
-        <button className="nav-item nav-item--button" type="button" onClick={() => toast('Docs are coming next in this build.', 'info')}>
-          <LifeBuoy size={18} strokeWidth={1.8} />
-          <span>Help &amp; docs</span>
-        </button>
       </nav>
 
       <div className="sidebar__bottom">

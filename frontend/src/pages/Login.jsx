@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft,
   ArrowRight,
@@ -22,6 +22,7 @@ import { api } from '../lib/api'
 
 export function Login() {
   const { user, data, authenticate } = useApp()
+  const navigate = useNavigate()
   const [register, setRegister] = useState(false)
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
@@ -78,6 +79,7 @@ export function Login() {
         setPassword('')
       } else {
         await authenticate('login', { identifier: email, password })
+    navigate('/hero')
       }
     } catch (failure) {
       setError(failure.message)

@@ -51,6 +51,7 @@ const titles = [
   ['/guidelines', 'Guidelines'],
   ['/assets', 'Brand assets'],
   ['/insights', 'Insights'],
+  ['/calendar', 'Editorial Calendar'],
   ['/settings', 'Settings'],
 ]
 

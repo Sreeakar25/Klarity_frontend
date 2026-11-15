@@ -9,10 +9,12 @@ import { Kbd } from './UI'
 
 const pageRoutes = [
   { label: 'Overview', path: '/', description: 'Brand health, queue, recent reviews' },
+  { label: 'Creator Studio', path: '/studio', description: 'Interactive copy sandbox and checks' },
   { label: 'Reviews', path: '/reviews', description: 'Every submission and decision' },
   { label: 'Guidelines', path: '/guidelines', description: 'The source of truth' },
   { label: 'Brand assets', path: '/assets', description: 'Logo, palette, type, campaign plates' },
   { label: 'Insights', path: '/insights', description: 'Patterns and governance signals' },
+  { label: 'Editorial Calendar', path: '/calendar', description: 'Scheduled brand campaigns and content drops' },
   { label: 'Settings', path: '/settings', description: 'Workspace and review defaults' },
 ]
 
