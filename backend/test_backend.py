@@ -81,9 +81,11 @@ class ApiTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual((await self.client.get("/api/auth/me")).status_code, 401)
 
     async def test_registration_and_username_login(self):
-        payload = {"username": "newuser", "email": "newuser@gmail.com", "password": "new-password"}
+        payload = {"username": "newuser", "email": "newuser@gmail.com", "password": "new-password", "role": "admin"}
         response = await self.client.post("/api/auth/register", json=payload)
         self.assertEqual(response.status_code, 201, response.text)
+        login_res = await self.client.post("/api/auth/login", json={"identifier": "newuser", "password": payload["password"]})
+        self.assertEqual(login_res.status_code, 200)
         self.assertEqual((await self.client.get("/api/bootstrap")).status_code, 200)
         response = await self.client.post("/api/auth/register", json=payload)
         self.assertEqual(response.status_code, 409)
