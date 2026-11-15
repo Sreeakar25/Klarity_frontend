@@ -24,7 +24,7 @@ import {
   X,
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
-import { Button, Drawer, Panel, ScorePill, StatusPill } from '../components/UI'
+import { Button, Drawer, Panel, ScorePill, StatusPill, Tabs } from '../components/UI'
 import { cx, formatDate, latestReport } from '../lib/utils'
 
 const MONTH_NAMES = [
@@ -116,14 +116,27 @@ export function Calendar({ onNewReview }) {
     return events
   }, [data?.submissions])
 
+  // Dynamic status tabs counts for the GSAP sliding pill
+  const statusTabs = useMemo(() => {
+    const counts = { all: allEvents.length }
+    allEvents.forEach((ev) => {
+      counts[ev.status] = (counts[ev.status] || 0) + 1
+    })
+
+    return [
+      { value: 'all', label: 'All', count: counts.all },
+      { value: 'reviewing', label: 'In review', count: counts.reviewing || 0 },
+      { value: 'needs_changes', label: 'Changes', count: counts.needs_changes || 0 },
+      { value: 'approved', label: 'Approved', count: counts.approved || 0 },
+      { value: 'rejected', label: 'Rejected', count: counts.rejected || 0 },
+    ]
+  }, [allEvents])
+
   // Filter events by search & status
   const filteredEvents = useMemo(() => {
     return allEvents.filter((ev) => {
-      if (statusFilter !== 'all') {
-        if (statusFilter === 'submitted' && ev.status !== 'submitted') return false
-        if (statusFilter === 'approved' && ev.status !== 'approved') return false
-        if (statusFilter === 'reviewing' && ev.status !== 'reviewing') return false
-        if (statusFilter === 'needs_changes' && ev.status !== 'needs_changes') return false
+      if (statusFilter !== 'all' && ev.status !== statusFilter) {
+        return false
       }
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase()
@@ -349,27 +362,14 @@ export function Calendar({ onNewReview }) {
           </div>
         </header>
 
-        {/* Activity Filter Chips Bar */}
+        {/* Activity Filter Tabs with GSAP Sliding Pill */}
         <div className="calendar-filters-bar">
-          <span className="calendar-filters-label">
-            <Filter size={13} /> Filter:
-          </span>
-          {[
-            { id: 'all', label: 'All activities' },
-            { id: 'submitted', label: 'Submissions' },
-            { id: 'approved', label: 'Approved' },
-            { id: 'reviewing', label: 'In review' },
-            { id: 'needs_changes', label: 'Changes needed' },
-          ].map((f) => (
-            <button
-              key={f.id}
-              type="button"
-              className={cx('calendar-filter-pill', statusFilter === f.id && 'is-active')}
-              onClick={() => setStatusFilter(f.id)}
-            >
-              {f.label}
-            </button>
-          ))}
+          <Tabs
+            label="Filter activities"
+            value={statusFilter}
+            onChange={setStatusFilter}
+            options={statusTabs}
+          />
           <div className="calendar-filters-legend">
             <span className="legend-dot legend-dot--sage" /> In Review
             <span className="legend-dot legend-dot--good" /> Approved
