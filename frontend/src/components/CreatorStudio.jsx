@@ -53,7 +53,7 @@ const PRESET_DRAFTS = {
 
 export function CreatorStudio({ submissions = [], onNewReview, toast }) {
   const navigate = useNavigate()
-  const { createSubmission, currentUser } = useApp()
+  const { createSubmission, currentUser, isLead } = useApp()
 
   const [draftTitle, setDraftTitle] = useState(PRESET_DRAFTS.spring.title)
   const [channel, setChannel] = useState(PRESET_DRAFTS.spring.channel)
@@ -516,7 +516,7 @@ export function CreatorStudio({ submissions = [], onNewReview, toast }) {
                 className="btn-full-secondary"
                 onClick={() => navigate('/reviews')}
               >
-                Open Full Review Desk
+                {isLead ? 'Open Full Review Desk' : 'Open My Submissions'}
               </Button>
             </div>
           </aside>

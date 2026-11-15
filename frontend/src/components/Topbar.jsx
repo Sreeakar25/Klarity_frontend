@@ -71,6 +71,8 @@ export function Topbar({ onMenu, onNewReview, currentPath }) {
 
   const title = currentPath?.startsWith('/reviews/')
     ? 'Review report'
+    : location.pathname === '/reviews' && !isLead
+    ? 'My Submissions'
     : titles.find(([path]) => path === location.pathname)?.[1] || 'Overview'
 
   useEffect(() => {
@@ -140,7 +142,7 @@ export function Topbar({ onMenu, onNewReview, currentPath }) {
             {currentPath?.startsWith('/reviews/') ? (
               <>
                 <Link to="/reviews" className="crumbs__link">
-                  Reviews
+                  {isLead ? 'Reviews' : 'My Submissions'}
                 </Link>
                 <ChevronRight size={13} />
                 <strong>Review report</strong>

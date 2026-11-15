@@ -93,6 +93,7 @@ export function Sidebar({ open, onClose, onNewReview }) {
         <p className="sidebar__label">Workspace</p>
         {items.map((item) => {
           const Icon = item.icon
+          const label = item.to === '/reviews' && !isLead ? 'My submissions' : item.label
           return (
             <NavLink
               key={item.to}
@@ -102,7 +103,7 @@ export function Sidebar({ open, onClose, onNewReview }) {
               onClick={onClose}
             >
               <Icon size={18} strokeWidth={1.8} />
-              <span>{item.label}</span>
+              <span>{label}</span>
               {item.badge && queue > 0 ? <span className="nav-item__badge">{queue}</span> : null}
             </NavLink>
           )
