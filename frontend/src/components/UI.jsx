@@ -346,8 +346,10 @@ export function Select({
   placeholder = 'Select option',
   className = '',
   id,
-  'aria-label': ariaLabel,
+  'aria-label': ariaLabelProp,
+  ariaLabel: altAriaLabel,
 }) {
+  const ariaLabel = ariaLabelProp || altAriaLabel
   const [open, setOpen] = useState(false)
   const containerRef = useRef(null)
 

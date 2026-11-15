@@ -24,7 +24,7 @@ import {
   X,
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
-import { Button, Drawer, Panel, ScorePill, StatusPill, Tabs } from '../components/UI'
+import { Button, Drawer, Panel, ScorePill, Select, StatusPill, Tabs } from '../components/UI'
 import { cx, formatDate, latestReport } from '../lib/utils'
 
 const MONTH_NAMES = [
@@ -337,18 +337,17 @@ export function Calendar({ onNewReview }) {
             </div>
 
             {/* View Mode Switcher */}
-            <div className="calendar-view-select">
-              <select
-                value={viewMode}
-                onChange={(e) => setViewMode(e.target.value)}
-                aria-label="Select calendar view"
-              >
-                <option value="month">Month view</option>
-                <option value="week">Week view</option>
-                <option value="agenda">Agenda view</option>
-              </select>
-              <ChevronDown size={14} className="calendar-select-arrow" />
-            </div>
+            <Select
+              className="calendar-view-select"
+              value={viewMode}
+              onChange={setViewMode}
+              ariaLabel="Select calendar view"
+              options={[
+                { value: 'month', label: 'Month view' },
+                { value: 'week', label: 'Week view' },
+                { value: 'agenda', label: 'Agenda view' },
+              ]}
+            />
 
             {/* Primary Action Button */}
             <Button

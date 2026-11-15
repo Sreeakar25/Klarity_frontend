@@ -8853,35 +8853,19 @@ kbd {
   background: rgba(0, 0, 0, 0.05);
 }
 
-.calendar-view-select {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-}
-
-.calendar-view-select select {
-  appearance: none;
-  background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: 7px;
+/* Calendar Header Custom Select */
+.calendar-view-select .custom-select__trigger {
   height: 34px;
-  padding: 0 28px 0 12px;
+  padding: 0 10px;
   font-size: 12px;
   font-weight: 700;
-  color: var(--ink);
-  cursor: pointer;
-  outline: none;
+  border-radius: 7px;
+  min-width: 124px;
+  background: var(--paper);
 }
 
-.calendar-view-select select:focus {
-  border-color: var(--sage, #298EE4);
-}
-
-.calendar-select-arrow {
-  position: absolute;
-  right: 9px;
-  pointer-events: none;
-  color: var(--muted);
+.calendar-view-select .custom-select__trigger:hover {
+  background: var(--paper-raised);
 }
 
 .calendar-filters-bar {

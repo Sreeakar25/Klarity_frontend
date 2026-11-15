@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Box, CalendarDays, Check, ChevronDown, Grid2X2, RotateCcw, Timer } from "lucide-react";
+import { Box, CalendarDays, Grid2X2, RotateCcw, Timer } from "lucide-react";
+import { Select } from "../UI";
 
 export interface FocusSession {
   id: string;
@@ -131,18 +132,6 @@ export function FocusCity({ days, endDate, title = "Focus City", description = "
   const id = React.useId();
   const progress = useMorph(view);
 
-  const [rangeOpen, setRangeOpen] = React.useState(false);
-  const rangeRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (rangeRef.current && !rangeRef.current.contains(e.target as Node)) {
-        setRangeOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   React.useEffect(() => {
     const element = plotRef.current;
@@ -185,37 +174,20 @@ export function FocusCity({ days, endDate, title = "Focus City", description = "
       <header className="fc-header">
         <div className="fc-heading"><span className="fc-emblem"><Timer size={17} strokeWidth={1.7} aria-hidden="true" /></span><div><h2>{title}</h2><p>{description}</p></div></div>
         <div className="fc-tools">
-          <div className="fc-dropdown" ref={rangeRef}>
-            <button
-              type="button"
-              className="fc-dropdown-btn cursor-interaction"
-              onClick={() => { setRangeOpen(!rangeOpen); setDateOpen(false); }}
-              aria-expanded={rangeOpen}
-            >
-              <span>{weeks} weeks</span>
-              <ChevronDown size={12} className={`fc-chevron ${rangeOpen ? "is-open" : ""}`} />
-            </button>
-            {rangeOpen && (
-              <div className="fc-dropdown-menu" role="menu">
-                <button
-                  type="button"
-                  className={`fc-dropdown-item ${weeks === 4 ? "is-active" : ""}`}
-                  onClick={() => { setWeeks(4); setManualRange(true); setHover(null); setRangeOpen(false); }}
-                >
-                  <span>4 weeks</span>
-                  {weeks === 4 && <Check size={12} className="fc-item-check" />}
-                </button>
-                <button
-                  type="button"
-                  className={`fc-dropdown-item ${weeks === 12 ? "is-active" : ""}`}
-                  onClick={() => { setWeeks(12); setManualRange(true); setHover(null); setRangeOpen(false); }}
-                >
-                  <span>12 weeks</span>
-                  {weeks === 12 && <Check size={12} className="fc-item-check" />}
-                </button>
-              </div>
-            )}
-          </div>
+          <Select
+            className="fc-range-select"
+            value={weeks}
+            onChange={(val: any) => {
+              setWeeks(Number(val) as 4 | 12);
+              setManualRange(true);
+              setHover(null);
+            }}
+            options={[
+              { value: 4, label: "4 weeks" },
+              { value: 12, label: "12 weeks" },
+            ]}
+            ariaLabel="Visible period"
+          />
           <div className="fc-switch" role="group" aria-label="Visualization view">
             <button type="button" className="cursor-interaction" aria-pressed={view === "city"} onClick={() => { setView("city"); setHover(null); }}><Box size={14} aria-hidden="true" /><span>3D</span></button>
             <button type="button" className="cursor-interaction" aria-pressed={view === "heatmap"} onClick={() => { setView("heatmap"); setHover(null); }}><Grid2X2 size={14} aria-hidden="true" /><span>2D</span></button>
@@ -284,13 +256,13 @@ const styles = `
 .focus-city[data-theme=light]{color-scheme:light}.focus-city[data-theme=dark]{color-scheme:dark}.dark .focus-city[data-theme=auto]{color-scheme:dark}
 .focus-city *,.focus-city *::before,.focus-city *::after{box-sizing:border-box}.focus-city button,.focus-city select,.focus-city input{font:inherit;color:inherit}.focus-city button{transition:background .16s ease,color .16s ease,transform .16s ease}.focus-city button:active:not(:disabled){transform:translateY(1px)}.focus-city button:disabled{opacity:.3;cursor:default}.focus-city svg:not(.fc-chart){flex:none}.fc-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .fc-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px 16px}.fc-heading{display:flex;gap:11px;align-items:center;min-width:0}.fc-emblem{width:34px;height:34px;border:1px solid var(--fc-border);border-radius:9px;display:grid;place-items:center;background:var(--fc-subtle);flex:none}.fc-heading h2{font-size:15px;font-weight:600;letter-spacing:-.3px;line-height:1.3;margin:0}.fc-heading p{font-size:12px;line-height:1.4;color:var(--fc-muted);margin:4px 0 0}.fc-tools{display:flex;align-items:center;gap:8px;flex:none}
-.fc-dropdown{position:relative;display:inline-flex}.fc-dropdown-btn{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;background:var(--fc-surface);border:1px solid var(--fc-border);border-radius:7px;font-size:12px;font-weight:600;color:var(--fc-ink);cursor:pointer;transition:all .14s ease}.fc-dropdown-btn:hover{background:var(--fc-hover);border-color:var(--line-strong,var(--fc-border))}.fc-dropdown-icon{color:var(--fc-muted);flex:none}.fc-chevron{color:var(--fc-muted);transition:transform .16s ease;flex:none}.fc-chevron.is-open{transform:rotate(180deg)}.fc-dropdown-menu{position:absolute;top:calc(100% + 5px);right:0;z-index:40;min-width:130px;background:var(--fc-surface);border:1px solid var(--fc-border);border-radius:9px;box-shadow:0 4px 18px var(--fc-shadow);padding:4px;display:flex;flex-direction:column;gap:2px;animation:fc-menu-in .14s ease-out}@keyframes fc-menu-in{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:translateY(0)}}.fc-dropdown-item{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;padding:6px 9px;border:0;background:transparent;border-radius:6px;font-size:12px;font-weight:500;color:var(--fc-ink);text-align:left;cursor:pointer;transition:background .12s ease,color .12s ease}.fc-dropdown-item:hover{background:var(--fc-hover);color:var(--fc-ink)}.fc-dropdown-item.is-active{background:var(--sage-soft,#d7eafb);color:var(--sage-deep,#166cb8);font-weight:700}.fc-item-check{color:var(--sage-deep,#166cb8);flex:none}
+.fc-range-select .custom-select__trigger{height:30px;padding:0 10px;background:var(--fc-surface);border:1px solid var(--fc-border);border-radius:7px;font-size:12px;font-weight:600;color:var(--fc-ink);min-width:105px}.fc-range-select .custom-select__trigger:hover{background:var(--fc-hover);border-color:var(--line-strong,var(--fc-border))}.fc-range-select .custom-select__dropdown{background:var(--fc-surface);border-color:var(--fc-border);border-radius:9px;min-width:115px;z-index:40}.fc-range-select .custom-select__option{font-size:12px;color:var(--fc-ink)}.fc-range-select .custom-select__option:hover{background:var(--fc-hover);color:var(--fc-ink)}.fc-range-select .custom-select__option.is-selected{background:var(--sage-soft,#d7eafb);color:var(--sage-deep,#166cb8);font-weight:700}
 .fc-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 24px 16px;padding-bottom:14px;border-bottom:1px solid var(--fc-border)}.fc-stats>div{display:flex;flex-direction:column}.fc-stats>div+div{padding-left:18px;border-left:1px solid var(--fc-border)}.fc-stats span{color:var(--fc-muted);font-size:11px;font-weight:600}.fc-stats strong{display:block;font-size:22px;line-height:1.25;font-weight:700;letter-spacing:-.6px;margin:3px 0 2px;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--fc-ink)}.fc-stats em{font-size:13px;font-weight:500;font-style:normal;letter-spacing:-.2px;color:var(--fc-muted)}.fc-stats small{font-size:11px;color:var(--fc-muted)}
 .fc-switch{display:flex;padding:3px;background:var(--fc-subtle);border:1px solid var(--fc-border);border-radius:8px;gap:2px}.fc-switch button{display:flex;align-items:center;justify-content:center;gap:5px;border:0;background:transparent;border-radius:5px;height:25px;padding:0 8px;font-size:12px;color:var(--fc-muted)}.fc-switch button:hover{background:var(--fc-hover);color:var(--fc-ink)}.fc-switch button[aria-pressed=true]{background:var(--fc-selected);color:var(--fc-on-selected);box-shadow:0 1px 2px var(--fc-shadow)}.fc-switch button[aria-pressed=true]:hover{background:var(--fc-selected);color:var(--fc-on-selected)}
 .fc-plot-header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 24px;color:var(--fc-muted);font-size:11px;min-height:23px}.fc-plot-header>span{display:flex;align-items:center;gap:6px}.fc-camera{height:24px;width:24px;border:0;background:transparent;display:grid;place-items:center;border-radius:5px;padding:0}.fc-camera:hover{background:var(--fc-hover)}.fc-plot{position:relative;margin:0 10px;touch-action:pan-y}.fc-chart{display:block;overflow:visible;user-select:none}.fc-plot[data-view=city] .fc-chart{cursor:grab}.fc-dragging .fc-chart{cursor:grabbing!important}.fc-block{--fc-top:var(--fc-empty)}.fc-block[data-level="1"]{--fc-top:var(--fc-green-1)}.fc-block[data-level="2"]{--fc-top:var(--fc-green-2)}.fc-block[data-level="3"]{--fc-top:var(--fc-green-3)}.fc-block[data-level="4"]{--fc-top:var(--fc-green-4)}.fc-roof{fill:var(--fc-top)}.fc-left{fill:color-mix(in srgb,var(--fc-top) 87%,var(--fc-ink) 13%)}.fc-right{fill:color-mix(in srgb,var(--fc-top) 72%,var(--fc-ink) 28%)}.fc-face{transition:filter .14s ease}.fc-hovered .fc-face{filter:brightness(1.08)}.fc-axis text{fill:var(--fc-muted);font-size:11px;font-family:inherit}.fc-tooltip{position:absolute;min-width:150px;z-index:3;pointer-events:none;border:1px solid var(--fc-border);border-radius:8px;padding:8px 10px;box-shadow:0 4px 16px var(--fc-shadow);background:var(--fc-surface);display:flex;flex-direction:column;gap:2px;font-size:11px}.fc-tooltip>span{color:var(--fc-muted)}.fc-tooltip>strong{font-size:13px;font-weight:500}.fc-tooltip small{font-size:11px;color:var(--fc-muted);font-weight:400}
 .fc-legend{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 24px 18px;font-size:11px;color:var(--fc-muted)}.fc-legend>div{display:flex;align-items:center;gap:4px}.fc-legend i{width:10px;height:10px;border-radius:2px;background:var(--fc-empty)}.fc-legend i[data-level="1"]{background:var(--fc-green-1)}.fc-legend i[data-level="2"]{background:var(--fc-green-2)}.fc-legend i[data-level="3"]{background:var(--fc-green-3)}.fc-legend i[data-level="4"]{background:var(--fc-green-4)}.fc-legend>div>span:first-child{margin-right:3px}.fc-legend>div>span:last-child{margin-left:3px}
 @media(max-width:560px){.fc-header{align-items:flex-start;flex-wrap:wrap;gap:14px;padding:19px 18px 0}.fc-tools{width:100%;justify-content:space-between}.fc-plot-header{margin:0 18px}.fc-legend{margin:0 18px 16px}.fc-stats{margin:16px 18px 14px;gap:8px}.fc-stats>div+div{padding-left:12px}.fc-stats strong{font-size:19px}.fc-stats em{font-size:11px}}
-@media(pointer:coarse){.fc-switch button{height:38px;min-width:44px}.fc-dropdown-btn{height:38px;font-size:14px}.fc-camera{height:44px;width:44px}.fc-plot-header{min-height:32px}}
-.fc-switch button,.fc-dropdown-btn{font-family:inherit}
+@media(pointer:coarse){.fc-switch button{height:38px;min-width:44px}.fc-range-select .custom-select__trigger{height:38px;font-size:14px}.fc-camera{height:44px;width:44px}.fc-plot-header{min-height:32px}}
+.fc-switch button{font-family:inherit}
 @media(prefers-reduced-motion:reduce){.focus-city *,.focus-city *::before,.focus-city *::after{animation:none!important;transition:none!important}}
 `;
