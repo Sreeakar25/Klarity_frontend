@@ -60,16 +60,11 @@ export function Reviews({ onNewReview }) {
   // When team member, strictly show only their own authored submissions
   const baseSubmissions = useMemo(() => {
     if (isLead) return data.submissions
-    const userLower = (currentUser || '').toLowerCase()
+    const userLower = (currentUser || '').toLowerCase().trim()
+    if (!userLower) return []
     return data.submissions.filter((item) => {
-      const author = (item.submitted_by || '').toLowerCase()
-      return (
-        author === userLower ||
-        author.includes(userLower) ||
-        author === 'ashwik' ||
-        author.includes('creator') ||
-        userLower === 'ashwik'
-      )
+      const author = (item.submitted_by || '').toLowerCase().trim()
+      return author === userLower || author.includes(userLower) || userLower.includes(author)
     })
   }, [currentUser, data.submissions, isLead])
 

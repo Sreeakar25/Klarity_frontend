@@ -113,20 +113,15 @@ export function Dashboard({ onNewReview }) {
   const days = period === '7d' ? 7 : period === '14d' ? 14 : 30
   const chartData = trends.slice(-days)
 
-  const userLower = (currentUser || '').toLowerCase()
+  const userLower = (currentUser || '').toLowerCase().trim()
   const mySubmissions = useMemo(() => {
     if (isLead) return submissions
+    if (!userLower) return []
     return submissions.filter((item) => {
-      const author = (item.submitted_by || '').toLowerCase()
-      return (
-        (userLower && (author === userLower || author.includes(userLower) || userLower.includes(author))) ||
-        author.includes('ashwik') ||
-        author.includes('creator') ||
-        userLower.includes('ashwik') ||
-        userLower.includes('creator')
-      )
+      const author = (item.submitted_by || '').toLowerCase().trim()
+      return author === userLower || author.includes(userLower) || userLower.includes(author)
     })
-  }, [currentUser, submissions, isLead])
+  }, [currentUser, submissions, isLead, userLower])
 
   const myStats = useMemo(() => {
     const total = mySubmissions.length

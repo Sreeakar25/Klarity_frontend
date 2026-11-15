@@ -34,13 +34,9 @@ export function Sidebar({ open, onClose, onNewReview }) {
   const queue = isLead
     ? (data?.stats?.pending_reviews ?? 0)
     : (data?.submissions || []).filter((item) => {
-        const author = (item.submitted_by || '').toLowerCase()
-        const userLower = (currentUser || '').toLowerCase()
-        const isMine =
-          (userLower && (author === userLower || author.includes(userLower))) ||
-          author.includes('ashwik') ||
-          author.includes('creator') ||
-          userLower.includes('ashwik')
+        const author = (item.submitted_by || '').toLowerCase().trim()
+        const userLower = (currentUser || '').toLowerCase().trim()
+        const isMine = userLower && (author === userLower || author.includes(userLower) || userLower.includes(author))
         return isMine && (item.status === 'reviewing' || item.status === 'pending' || item.status === 'needs_changes')
       }).length
   const score = data?.stats?.avg_score ?? 88

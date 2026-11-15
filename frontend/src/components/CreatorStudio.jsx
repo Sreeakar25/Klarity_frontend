@@ -233,16 +233,11 @@ export function CreatorStudio({ submissions = [], onNewReview, toast }) {
 
   // Filter ONLY current user's submissions (Zero other people's clutter!)
   const mySubmissions = useMemo(() => {
-    const userLower = (currentUser || '').toLowerCase()
+    const userLower = (currentUser || '').toLowerCase().trim()
+    if (!userLower) return []
     return submissions.filter((s) => {
-      const author = (s.submitted_by || '').toLowerCase()
-      return (
-        author === userLower ||
-        author.includes(userLower) ||
-        author === 'ashwik' ||
-        author.includes('creator') ||
-        userLower === 'ashwik'
-      )
+      const author = (s.submitted_by || '').toLowerCase().trim()
+      return author === userLower || author.includes(userLower) || userLower.includes(author)
     })
   }, [currentUser, submissions])
 
@@ -546,7 +541,7 @@ export function CreatorStudio({ submissions = [], onNewReview, toast }) {
 
           {mySubmissions.length > 0 ? (
             <div className="table-wrap">
-              <table className="review-table">
+              <table className="data-table">
                 <thead>
                   <tr>
                     <th>Content piece</th>
@@ -554,7 +549,7 @@ export function CreatorStudio({ submissions = [], onNewReview, toast }) {
                     <th>Score</th>
                     <th>Editorial Status</th>
                     <th>Lead Reviewer Feedback</th>
-                    <th>View</th>
+                    <th aria-label="Open" />
                   </tr>
                 </thead>
                 <tbody>
@@ -564,15 +559,19 @@ export function CreatorStudio({ submissions = [], onNewReview, toast }) {
                     return (
                       <tr key={submission.id}>
                         <td>
-                          <div className="item-title">
-                            <FileText size={16} className="text-muted" />
-                            <div>
+                          <Link to={`/reviews/${submission.id}`} className="table-title">
+                            <span className="table-title__icon">
+                              <FileText size={15} />
+                            </span>
+                            <span>
                               <strong>{submission.title}</strong>
                               <small>Authored by {submission.submitted_by}</small>
-                            </div>
-                          </div>
+                            </span>
+                          </Link>
                         </td>
-                        <td>{timeAgo(submission.submitted_at)}</td>
+                        <td style={{ whiteSpace: 'nowrap', color: 'var(--faint)', fontSize: '12px' }}>
+                          {timeAgo(submission.submitted_at)}
+                        </td>
                         <td>
                           <span className={cx('score-text', `is-${scoreTone(score)}`)}>
                             {Math.round(score)}
@@ -581,10 +580,8 @@ export function CreatorStudio({ submissions = [], onNewReview, toast }) {
                         <td>
                           <StatusPill status={submission.status} />
                         </td>
-                        <td className="reviewer-note-cell">
-                          <small>
-                            {submission.reviewer_notes || 'Pending evaluation in the brand reviewer queue.'}
-                          </small>
+                        <td style={{ maxWidth: '340px', color: 'var(--ink-soft)', fontSize: '12px', lineHeight: 1.45 }}>
+                          {submission.reviewer_notes || 'Pending evaluation in the brand reviewer queue.'}
                         </td>
                         <td>
                           <Link

@@ -101,17 +101,12 @@ export function Topbar({ onMenu, onNewReview, currentPath }) {
   const notifications = useMemo(() => {
     const list = data?.activity || []
     if (isLead) return list.slice(0, 5)
-    const userLower = (user?.username || '').toLowerCase()
+    const userLower = (user?.username || '').toLowerCase().trim()
     const mySubIds = new Set(
       (data?.submissions || [])
         .filter((s) => {
-          const author = (s.submitted_by || '').toLowerCase()
-          return (
-            (userLower && (author === userLower || author.includes(userLower))) ||
-            author.includes('ashwik') ||
-            author.includes('creator') ||
-            userLower.includes('ashwik')
-          )
+          const author = (s.submitted_by || '').toLowerCase().trim()
+          return userLower && (author === userLower || author.includes(userLower) || userLower.includes(author))
         })
         .map((s) => s.id)
     )

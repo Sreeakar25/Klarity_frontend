@@ -19,11 +19,6 @@ export function CreatorStudioPage({ onNewReview }) {
             formal governance review.
           </p>
         </div>
-        <div className="page-head__actions">
-          <Button icon={Upload} onClick={onNewReview}>
-            Submit piece for review
-          </Button>
-        </div>
       </section>
 
       <CreatorStudio
