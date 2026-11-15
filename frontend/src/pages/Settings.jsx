@@ -2,20 +2,26 @@ import { useEffect, useState } from 'react'
 import {
   Bell,
   Check,
+  Clock,
   Clock3,
   Globe,
+  KeyRound,
   Mail,
   Plus,
   Save,
+  ShieldAlert,
   ShieldCheck,
   SlidersHorizontal,
+  UserCheck,
   UserPlus,
   Users,
   Workflow,
+  X,
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { Avatar, Button, Field, Panel, SectionHead, Select } from '../components/UI'
 import { cx } from '../lib/utils'
+import { api } from '../lib/api'
 
 const STORAGE_KEY = 'klarity.settings.v1'
 
@@ -64,9 +70,24 @@ function ToggleRow({ label, description, checked, onChange }) {
 }
 
 export function Settings() {
-  const { toast, currentUser } = useApp()
+  const { toast, currentUser, user, isLead } = useApp()
   const [settings, setSettings] = useState(defaultSettings)
   const [saved, setSaved] = useState(false)
+  const [pendingAccounts, setPendingAccounts] = useState([])
+  const [brandCode, setBrandCode] = useState('KLARITY-2026')
+  const [loadingPending, setLoadingPending] = useState(false)
+
+  const fetchPending = async () => {
+    try {
+      setLoadingPending(true)
+      const list = await api.pendingAccounts()
+      setPendingAccounts(list || [])
+    } catch {
+      // non-admin or failed
+    } finally {
+      setLoadingPending(false)
+    }
+  }
 
   useEffect(() => {
     try {
@@ -75,7 +96,21 @@ export function Settings() {
     } catch {
       // ignore malformed local settings
     }
+    api.brandCodeHint().then(res => {
+      if (res?.brand_code) setBrandCode(res.brand_code)
+    }).catch(() => {})
+    fetchPending()
   }, [])
+
+  const handleVerify = async (accountId, approve) => {
+    try {
+      const res = await api.verifyAccount({ account_id: accountId, approve })
+      toast(res.message, approve ? 'good' : 'warn')
+      fetchPending()
+    } catch (err) {
+      toast(err.message, 'warn')
+    }
+  }
 
   const update = (field, value) => {
     setSettings((current) => ({ ...current, [field]: value }))
@@ -251,19 +286,76 @@ export function Settings() {
 
           <Panel className="settings-section" id="team">
             <SectionHead
-              title="Team"
+              title="Team & Access Governance"
               description="Roles decide who can approve, reject, and publish guidelines."
               action={
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  icon={UserPlus}
-                  onClick={() => toast('Invites are mocked in this local demo.', 'info')}
-                >
-                  Invite member
-                </Button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '11.5px', color: 'var(--muted)', background: 'var(--cream)', padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--line)' }}>
+                    Brand Code: <strong>{brandCode}</strong>
+                  </span>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    icon={UserPlus}
+                    onClick={() => toast(`Share Brand Value Code "${brandCode}" with new team members.`, 'info')}
+                  >
+                    Invite member
+                  </Button>
+                </div>
               }
             />
+
+            {pendingAccounts.length > 0 && (
+              <div style={{ marginBottom: '20px', padding: '14px', background: 'var(--sage-wash)', border: '1.5px solid var(--sage-soft)', borderRadius: 'var(--radius-sm)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Clock size={16} color="#b45309" />
+                    <strong style={{ fontSize: '13px', color: 'var(--ink)' }}>Pending Verification Requests ({pendingAccounts.length})</strong>
+                  </div>
+                  <small style={{ color: 'var(--muted)', fontSize: '11px' }}>Entered brand code · Awaiting owner authorization</small>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {pendingAccounts.map((acc) => (
+                    <div
+                      key={acc.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '10px 12px',
+                        background: '#fff',
+                        borderRadius: '6px',
+                        border: '1px solid var(--line)',
+                      }}
+                    >
+                      <div>
+                        <strong style={{ fontSize: '13px', display: 'block', color: 'var(--ink)' }}>{acc.username}</strong>
+                        <span style={{ fontSize: '11px', color: 'var(--muted)' }}>{acc.email} · Role: <strong style={{ color: 'var(--sage-deep)' }}>{acc.role === 'reviewer' ? 'Reviewer' : 'Team Member'}</strong></span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          icon={Check}
+                          onClick={() => handleVerify(acc.id, true)}
+                        >
+                          Approve Access
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          icon={X}
+                          onClick={() => handleVerify(acc.id, false)}
+                        >
+                          Reject
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="team-list">
               {team.map((member) => (
                 <div className="team-row" key={member.email}>

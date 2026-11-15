@@ -23,6 +23,10 @@ async function request(path, options = {}) {
 
 export const api = {
   me: () => request('/auth/me'),
+  brandCodeHint: () => request('/auth/brand-code-hint'),
+  pendingAccounts: () => request('/auth/pending-accounts'),
+  verifyAccount: (payload) =>
+    request('/auth/verify-account', { method: 'POST', body: JSON.stringify(payload) }),
   login: (payload) => request('/auth/login', { method: 'POST', body: JSON.stringify(payload) }),
   register: (payload) => request('/auth/register', { method: 'POST', body: JSON.stringify(payload) }),
   logout: () => request('/auth/logout', { method: 'POST' }),
