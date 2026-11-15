@@ -27,5 +27,6 @@ def get_db():
 
 def init_db():
     import models  # Register all models before creating tables.
+    import auth
 
     Base.metadata.create_all(bind=engine)
