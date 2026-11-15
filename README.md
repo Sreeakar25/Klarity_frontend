@@ -169,4 +169,5 @@ password. Use a separate database without this test account before deployment,
 set `ENABLE_TEST_ACCOUNT=false`, and use HTTPS with `COOKIE_SECURE=true`.
 The old demo SSO, any-password login, and password reset simulation are removed.
 #   K l a r i t y _ f r o n t e n d  
+ #   K l a r i t y _ f r o n t e n d  
  
