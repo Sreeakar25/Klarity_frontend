@@ -9,6 +9,7 @@ import {
   Images,
   LayoutDashboard,
   LifeBuoy,
+  Lock,
   Settings,
   Sparkles,
 } from 'lucide-react'
@@ -75,16 +76,23 @@ export function Sidebar({ open, onClose, onNewReview }) {
           <span className="brand-lockup__word">Klarity</span>
         </NavLink>
         <button
-          className="workspace-switch"
+          className={cx('workspace-switch', !isLead && 'workspace-switch--readonly')}
           type="button"
-          onClick={() => toast('Aster & Oak is the only workspace in this demo.', 'info')}
+          onClick={() => {
+            if (!isLead) {
+              toast('Workspace creation and switching is restricted to Brand Owners and Reviewers.', 'warn')
+            } else {
+              toast('Aster & Oak is the primary active workspace.', 'info')
+            }
+          }}
+          title={!isLead ? 'Assigned workspace (Governed by Brand Leads)' : 'Workspace settings'}
         >
           <span className="workspace-switch__mark">A&O</span>
           <span className="workspace-switch__copy">
             <strong>Aster &amp; Oak</strong>
-            <small>Brand workspace</small>
+            <small>{isLead ? 'Brand workspace' : 'Assigned workspace'}</small>
           </span>
-          <ChevronDown size={15} />
+          {isLead ? <ChevronDown size={15} /> : <Lock size={13} style={{ opacity: 0.6 }} />}
         </button>
       </div>
 
