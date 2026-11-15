@@ -24,7 +24,7 @@ import {
   Wand2,
   X,
 } from 'lucide-react'
-import { Button, CategoryTag, Meter, Panel, ScorePill, StatusPill } from './UI'
+import { Button, CategoryTag, Meter, Panel, ScorePill, Segmented, StatusPill } from './UI'
 import { cx, latestReport, scoreTone, timeAgo } from '../lib/utils'
 import { useApp } from '../context/AppContext'
 
@@ -271,22 +271,15 @@ export function CreatorStudio({ submissions = [], onNewReview, toast }) {
         </div>
 
         <div className="creator-toolbar-strip__right">
-          <div className="editor-mode-toggle">
-            <button
-              type="button"
-              className={cx('btn-mode-tab', viewMode === 'write' && 'is-active')}
-              onClick={() => setViewMode('write')}
-            >
-              <Edit3 size={13} /> Live Writer
-            </button>
-            <button
-              type="button"
-              className={cx('btn-mode-tab', viewMode === 'specimen' && 'is-active')}
-              onClick={() => setViewMode('specimen')}
-            >
-              <FileCheck size={13} /> Specimen View
-            </button>
-          </div>
+          <Segmented
+            label="Editor Mode"
+            value={viewMode}
+            onChange={setViewMode}
+            options={[
+              { value: 'write', label: 'Live Writer', icon: Edit3 },
+              { value: 'specimen', label: 'Specimen View', icon: FileCheck },
+            ]}
+          />
         </div>
       </div>
 
@@ -517,13 +510,14 @@ export function CreatorStudio({ submissions = [], onNewReview, toast }) {
                 {submitting ? 'Submitting to Review Pipeline...' : 'Submit Draft for Team Review'} <Send size={15} />
               </button>
 
-              <button
-                type="button"
-                className="btn-full-outline"
-                onClick={() => navigate('/reviews/1')}
+              <Button
+                variant="secondary"
+                trailing={ArrowRight}
+                className="btn-full-secondary"
+                onClick={() => navigate('/reviews')}
               >
-                Open Full Review Desk <ArrowRight size={14} />
-              </button>
+                Open Full Review Desk
+              </Button>
             </div>
           </aside>
         </div>
