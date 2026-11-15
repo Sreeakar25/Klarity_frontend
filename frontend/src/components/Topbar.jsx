@@ -7,6 +7,7 @@ import {
   ChevronDown,
   ChevronRight,
   CircleDot,
+  FileClock,
   LogOut,
   Mail,
   Menu,
@@ -279,9 +280,15 @@ export function Topbar({ onMenu, onNewReview, currentPath }) {
                   </div>
                 </div>
 
-                <button onClick={() => { setOpenMenu(null); navigate('/studio') }}>
-                  <Sparkles size={15} /> Creator Studio
-                </button>
+                {isMember ? (
+                  <button onClick={() => { setOpenMenu(null); navigate('/studio') }}>
+                    <Sparkles size={15} /> Creator Studio
+                  </button>
+                ) : (
+                  <button onClick={() => { setOpenMenu(null); navigate('/reviews') }}>
+                    <FileClock size={15} /> Review Desk
+                  </button>
+                )}
                 <button onClick={() => { setOpenMenu(null); navigate('/settings') }}>
                   <Settings size={15} /> Workspace settings
                 </button>

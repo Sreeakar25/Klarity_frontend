@@ -8,6 +8,7 @@ import {
   Check,
   CircleDot,
   Clock3,
+  FileClock,
   FileText,
   Image,
   LayoutTemplate,
@@ -228,9 +229,15 @@ export function Dashboard({ onNewReview }) {
           </p>
         </div>
         <div className="page-hero__actions">
-          <Link to="/studio" className="btn-hero-studio">
-            <Sparkles size={14} /> Open Creator Studio &rarr;
-          </Link>
+          {isLead ? (
+            <Link to="/reviews" className="btn-hero-studio">
+              <FileClock size={14} /> Open Review Desk &rarr;
+            </Link>
+          ) : (
+            <Link to="/studio" className="btn-hero-studio">
+              <Sparkles size={14} /> Open Creator Studio &rarr;
+            </Link>
+          )}
           <span className="date-stamp">
             <Calendar size={14} /> {todayLabel}
           </span>

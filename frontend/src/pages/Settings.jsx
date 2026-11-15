@@ -553,9 +553,10 @@ export function Settings() {
                   />
                   <ToggleRow
                     label="Creator Studio"
-                    description="Allow direct access to authoring and pre-flight suite."
-                    checked={visibilitySettings?.admin?.studio ?? true}
-                    onChange={(val) => updateRoleVisibility('admin', 'studio', val)}
+                    description="Authoring suite is exclusive to Stage 3 Team Members; reviewers and admins do not draft content."
+                    checked={false}
+                    disabled={true}
+                    onChange={() => {}}
                   />
                   <ToggleRow
                     label="Reviews Queue"

@@ -1,10 +1,15 @@
+import { Navigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { CreatorStudio } from '../components/CreatorStudio'
 import { Button } from '../components/UI'
 import { Sparkles, Upload } from 'lucide-react'
 
 export function CreatorStudioPage({ onNewReview }) {
-  const { data, toast } = useApp()
+  const { data, toast, isMember } = useApp()
+
+  if (!isMember) {
+    return <Navigate to="/reviews" replace />
+  }
 
   return (
     <div className="creator-studio-page">

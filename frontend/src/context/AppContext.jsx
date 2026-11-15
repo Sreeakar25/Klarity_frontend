@@ -6,7 +6,7 @@ const AppContext = createContext(null)
 const DEFAULT_VISIBILITY = {
   admin: {
     overview: true,
-    studio: true,
+    studio: false,       // Admins & Reviewers govern and audit; they do not author content
     reviews: true,
     calendar: true,
     guidelines: true,
@@ -16,7 +16,7 @@ const DEFAULT_VISIBILITY = {
   },
   member: {
     overview: true,
-    studio: true,
+    studio: true,        // Team member authoring workspace
     reviews: true,       // personal submissions
     calendar: false,
     guidelines: true,
@@ -148,7 +148,12 @@ export function AppProvider({ children }) {
   }
 
   const canViewModule = (moduleKey) => {
-    if (isOwner) return true // Brand Owner has full executive visibility
+    // Creator studio is an authoring workstation exclusively for Team Members (creators).
+    // Brand Owners and Reviewers audit and govern; they do not author content.
+    if (moduleKey === 'studio') {
+      return isMember && (visibilitySettings.member?.studio ?? true)
+    }
+    if (isOwner) return true // Brand Owner has full executive governance visibility
     if (isReviewer) {
       // Reviewers inherit admin visibility matrix
       return visibilitySettings.admin?.[moduleKey] ?? true
