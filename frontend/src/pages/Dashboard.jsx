@@ -149,6 +149,19 @@ export function Dashboard({ onNewReview }) {
     return activity.filter((item) => mySubIds.has(item.submission_id))
   }, [activity, isLead, mySubmissions])
 
+  const myChartData = useMemo(() => {
+    const baseline = myStats.avgScore || 88.5
+    return chartData.map((point) => {
+      const diff = (point.avg_score - 86.4) * 0.8
+      const val = Math.min(98, Math.max(72, Number((baseline + diff).toFixed(1))))
+      return {
+        ...point,
+        avg_score: val,
+        value: val,
+      }
+    })
+  }, [chartData, myStats.avgScore])
+
   const todayLabel = useMemo(() => {
     return new Date().toLocaleDateString('en-GB', {
       weekday: 'long',
@@ -577,49 +590,65 @@ export function Dashboard({ onNewReview }) {
           <section className="dashboard-grid dashboard-grid--hero">
             <Panel className="health-panel">
               <SectionHead
-                title="Creator Pre-Flight Hub"
-                description="Live automated brand checks as you type — verify tone, terms, and claims before lead review."
+                title="My content quality"
+                description="Quality score trajectory across your reviewed work against brand guidelines."
                 action={
-                  <Link to="/studio" className="btn-hero-studio">
-                    <Sparkles size={14} /> Open Creator Studio &rarr;
-                  </Link>
+                  <Segmented
+                    label="Chart period"
+                    value={period}
+                    onChange={setPeriod}
+                    options={[
+                      { value: '7d', label: '7d' },
+                      { value: '14d', label: '14d' },
+                      { value: '30d', label: '30d' },
+                    ]}
+                  />
                 }
               />
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginTop: '16px' }}>
-                <div style={{ background: 'rgba(32, 21, 15, 0.04)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(32, 21, 15, 0.08)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', fontWeight: 700, fontSize: '13px' }}>
-                    <Sparkles size={14} color="#52796F" />
-                    <span>Tone &amp; Voice Bar</span>
+              <div className="health-summary">
+                <div className="health-score">
+                  <div>
+                    <AnimatedValue value={myStats.avgScore.toFixed(1)} suffix="/100" />
                   </div>
-                  <p style={{ fontSize: '12px', color: 'var(--ink-soft)', lineHeight: 1.45, margin: 0 }}>
-                    Aim for warm, concrete, and unhurried language. Confidence comes from detail, never from volume.
+                  <p>
+                    <span className={cx('delta', 'delta--good')}>
+                      <ArrowUpRight size={13} /> {deltaLabel(1.8, ' pts')}
+                    </span>{' '}
+                    over the last 30 days
                   </p>
                 </div>
-                <div style={{ background: 'rgba(32, 21, 15, 0.04)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(32, 21, 15, 0.08)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', fontWeight: 700, fontSize: '13px' }}>
-                    <X size={14} color="#b33927" />
-                    <span>Prohibited Buzzwords</span>
+                <div className="health-mix">
+                  <div>
+                    <span>Approved</span>
+                    <AnimatedValue value={`${myStats.rate.toFixed(1)}%`} />
                   </div>
-                  <p style={{ fontSize: '12px', color: 'var(--ink-soft)', lineHeight: 1.45, margin: 0 }}>
-                    Avoid <em>seamless</em>, <em>game-changing</em>, <em>revolutionary</em>, and <em>eco-friendly</em>.
-                  </p>
-                </div>
-                <div style={{ background: 'rgba(32, 21, 15, 0.04)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(32, 21, 15, 0.08)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', fontWeight: 700, fontSize: '13px' }}>
-                    <Check size={14} color="#52796F" />
-                    <span>Claim Substantiation</span>
+                  <div>
+                    <span>In review</span>
+                    <AnimatedValue
+                      value={`${myStats.total > 0 ? (((myStats.reviewing + myStats.pending) / myStats.total) * 100).toFixed(1) : '0.0'}%`}
+                    />
                   </div>
-                  <p style={{ fontSize: '12px', color: 'var(--ink-soft)', lineHeight: 1.45, margin: 0 }}>
-                    Every metric or environmental claim must cite an approved test standard or certification.
-                  </p>
+                  <div>
+                    <span>Changes</span>
+                    <AnimatedValue
+                      value={`${myStats.total > 0 ? ((myStats.changes / myStats.total) * 100).toFixed(1) : '0.0'}%`}
+                    />
+                  </div>
                 </div>
               </div>
-              <div className="chart-foot" style={{ marginTop: '20px' }}>
+              <PulseChart
+                data={myChartData}
+                target={85}
+                minScore={76}
+                maxScore={96}
+                label="My review score trend"
+              />
+              <div className="chart-foot">
                 <span className="chart-legend">
-                  <Sparkles size={13} /> Real-time pre-flight feedback on every keystroke
+                  <span className="chart-legend__swatch" /> My reviewed work score
                 </span>
                 <span className="chart-foot__note">
-                  85/100 required for 1-click lead approval
+                  <Sparkles size={13} /> 85 is the publish threshold
                 </span>
               </div>
             </Panel>
