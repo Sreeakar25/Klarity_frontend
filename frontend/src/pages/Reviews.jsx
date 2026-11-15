@@ -21,6 +21,7 @@ import {
   Kbd,
   Panel,
   ScorePill,
+  Segmented,
   Select,
   StatusDot,
   StatusPill,
@@ -48,9 +49,10 @@ const statusTabs = [
 const PAGE_SIZE = 10
 
 export function Reviews({ onNewReview }) {
-  const { data } = useApp()
+  const { data, currentUser } = useApp()
   const navigate = useNavigate()
   const [status, setStatus] = useState('all')
+  const [scope, setScope] = useState('all')
   const [query, setQuery] = useState('')
   const [type, setType] = useState('all')
   const [sort, setSort] = useState('newest')
@@ -69,11 +71,16 @@ export function Reviews({ onNewReview }) {
     const result = data.submissions.filter((item) => {
       const matchesStatus = status === 'all' || item.status === status
       const matchesType = type === 'all' || item.content_type === type
+      const matchesScope =
+        scope === 'all' ||
+        item.submitted_by.toLowerCase().includes(currentUser?.toLowerCase() || '') ||
+        item.submitted_by.toLowerCase().includes('ashwik') ||
+        item.submitted_by.toLowerCase().includes('creator')
       const matchesQuery =
         !needle ||
         item.title.toLowerCase().includes(needle) ||
         item.submitted_by.toLowerCase().includes(needle)
-      return matchesStatus && matchesType && matchesQuery
+      return matchesStatus && matchesType && matchesScope && matchesQuery
     })
     return result.sort((a, b) => {
       if (sort === 'score') {
@@ -82,7 +89,7 @@ export function Reviews({ onNewReview }) {
       if (sort === 'oldest') return new Date(a.submitted_at) - new Date(b.submitted_at)
       return new Date(b.submitted_at) - new Date(a.submitted_at)
     })
-  }, [data.submissions, query, sort, status, type])
+  }, [currentUser, data.submissions, query, scope, sort, status, type])
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const currentPage = Math.min(page, pageCount - 1)
@@ -90,6 +97,7 @@ export function Reviews({ onNewReview }) {
 
   const reset = () => {
     setStatus('all')
+    setScope('all')
     setType('all')
     setQuery('')
     setPage(0)
@@ -101,13 +109,22 @@ export function Reviews({ onNewReview }) {
         <div>
           <h1>Reviews</h1>
           <p>
-            Every piece of content that has passed through the workspace, with its evidence and decision.
+            Browse all editorial reviews across Aster &amp; Oak. Team members can inspect scores, guideline findings, and lead decisions.
           </p>
         </div>
         <div className="page-head__actions">
-          <span className="review-count">
-            <strong>{data.stats.pending_reviews}</strong> waiting on a reviewer
-          </span>
+          <Segmented
+            label="Review scope"
+            value={scope}
+            onChange={(val) => {
+              setScope(val)
+              setPage(0)
+            }}
+            options={[
+              { value: 'all', label: 'All workspace' },
+              { value: 'mine', label: 'My pieces' },
+            ]}
+          />
           <Button icon={Plus} onClick={onNewReview}>
             New review
           </Button>
