@@ -20,7 +20,6 @@ import { PulseChart } from '../components/Charts'
 import { AnimatedValue } from '../components/AnimatedValue'
 import { animateHorizontalBars } from '../lib/animations'
 import {
-  Badge,
   Button,
   CategoryTag,
   Meter,
@@ -28,7 +27,6 @@ import {
   ScorePill,
   SectionHead,
   Segmented,
-  ShimmerText,
   StatusDot,
   StatusPill,
 } from '../components/UI'
@@ -185,9 +183,6 @@ export function Dashboard({ onNewReview }) {
           </p>
         </div>
         <div className="page-hero__actions">
-          <Badge variant="sage" dot dotStatus="online">
-            <ShimmerText>Governance Active</ShimmerText>
-          </Badge>
           <span className="date-stamp">
             <Calendar size={14} /> {todayLabel}
           </span>
