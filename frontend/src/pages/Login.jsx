@@ -105,8 +105,8 @@ export function Login() {
             <p className="login-subtitle">
               {register
                 ? isAdmin
-                  ? 'Define brand identity & core values for the workspace.'
-                  : 'Enter your brand value code to request account authorization.'
+                  ? 'Define brand identity & core values to create a new workspace.'
+                  : 'Join an existing workspace using your organization brand code.'
                 : 'Enter your username or email and password.'}
             </p>
           </div>
@@ -151,7 +151,7 @@ export function Login() {
                       <Crown size={14} color={role === 'owner' ? 'var(--sage)' : 'var(--muted)'} />
                       <span>Admin</span>
                     </div>
-                    <small>Stage 1 · Brand Owner</small>
+                    <small>Stage 1 · Creates Workspace</small>
                   </button>
                   <button
                     type="button"
@@ -265,7 +265,7 @@ export function Login() {
                   />
                 </div>
                 <p style={{ margin: '6px 0 0', fontSize: '11px', color: 'var(--muted)', lineHeight: 1.35 }}>
-                  🛡️ Reviewer &amp; User accounts verify this code and require <strong>Owner/Admin verification</strong> before sign in.
+                  🛡️ Workspace creation is reserved for <strong>Brand Owners</strong>. Team members and reviewers join an existing workspace with a verified Brand Value Code and admin authorization.
                 </p>
               </div>
             )}

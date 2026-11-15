@@ -972,9 +972,18 @@ ol {
   transition: border-color 160ms var(--ease-out), background 160ms var(--ease-out), box-shadow 160ms var(--ease-out);
 }
 
-.custom-select__trigger:hover {
+.custom-select__trigger:hover:not(:disabled):not(.is-disabled) {
   background: #fff;
   border-color: var(--line-strong);
+}
+
+.custom-select__trigger:disabled,
+.custom-select__trigger.is-disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  background: var(--paper-deep);
+  border-color: var(--line);
+  box-shadow: none;
 }
 
 .custom-select__trigger:focus {
@@ -1502,9 +1511,13 @@ ol {
   outline-offset: 2px;
 }
 
-.workspace-switch:hover {
+.workspace-switch:hover:not(.workspace-switch--readonly) {
   background: rgba(246, 241, 230, 0.1);
   border-color: rgba(246, 241, 230, 0.2);
+}
+
+.workspace-switch--readonly {
+  cursor: default;
 }
 
 .workspace-switch > svg {

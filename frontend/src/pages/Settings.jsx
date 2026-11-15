@@ -6,6 +6,7 @@ import {
   Clock3,
   Globe,
   KeyRound,
+  Lock,
   Mail,
   Plus,
   Save,
@@ -48,9 +49,9 @@ const team = [
   { name: 'Rohan Mehta', email: 'rohan@asterandoak.studio', role: 'Stage 3 · Team Member', status: 'Invited' },
 ]
 
-function ToggleRow({ label, description, checked, onChange }) {
+function ToggleRow({ label, description, checked, onChange, disabled = false }) {
   return (
-    <div className="toggle-row">
+    <div className={cx('toggle-row', disabled && 'is-disabled')} style={disabled ? { opacity: 0.65 } : undefined}>
       <div>
         <strong>{label}</strong>
         <p>{description}</p>
@@ -60,8 +61,10 @@ function ToggleRow({ label, description, checked, onChange }) {
         role="switch"
         aria-checked={checked}
         aria-label={label}
+        disabled={disabled}
         className={cx('switch', checked && 'is-on')}
-        onClick={() => onChange(!checked)}
+        onClick={() => !disabled && onChange(!checked)}
+        style={disabled ? { cursor: 'not-allowed' } : undefined}
       >
         <span />
       </button>
@@ -136,11 +139,46 @@ export function Settings() {
         </div>
         <div className="page-head__actions">
           <span className={cx('settings-saved', saved && 'is-saved')}>
-            {saved ? <><Check size={14} /> Saved locally</> : 'Demo workspace settings'}
+            {saved ? <><Check size={14} /> Saved locally</> : isLead ? 'Demo workspace settings' : 'Member view-only'}
           </span>
-          <Button icon={Save} onClick={save}>
-            Save changes
-          </Button>
+          {isLead ? (
+            <Button icon={Save} onClick={save}>
+              Save changes
+            </Button>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 12px',
+                  borderRadius: 'var(--radius-sm)',
+                  background: 'var(--cream)',
+                  border: '1px solid var(--line-strong)',
+                  fontSize: '12px',
+                  color: 'var(--muted)',
+                  fontWeight: 600,
+                }}
+              >
+                <Lock size={13} color="var(--sage)" />
+                Governed by Brand Leads
+              </span>
+              <Button
+                variant="secondary"
+                icon={Save}
+                onClick={() => {
+                  try {
+                    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
+                  } catch {}
+                  setSaved(true)
+                  toast('Personal notification preferences saved.', 'good')
+                }}
+              >
+                Save preferences
+              </Button>
+            </div>
+          )}
         </div>
       </section>
 
@@ -158,14 +196,59 @@ export function Settings() {
             <SectionHead
               title="Workspace"
               description="The identity and defaults attached to every review."
-              action={<Globe size={18} className="settings-section__icon" />}
+              action={
+                isLead ? (
+                  <Globe size={18} className="settings-section__icon" />
+                ) : (
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      fontSize: '11.5px',
+                      color: 'var(--muted)',
+                      background: 'var(--cream)',
+                      padding: '3px 8px',
+                      borderRadius: '4px',
+                      border: '1px solid var(--line)',
+                    }}
+                  >
+                    <Lock size={12} color="var(--sage)" />
+                    Lead Exclusive
+                  </span>
+                )
+              }
             />
+            {!isLead && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '9px',
+                  padding: '10px 14px',
+                  marginBottom: '16px',
+                  borderRadius: 'var(--radius-sm)',
+                  background: 'rgba(217, 119, 6, 0.08)',
+                  border: '1px solid rgba(217, 119, 6, 0.22)',
+                  color: '#92400e',
+                  fontSize: '12px',
+                  lineHeight: 1.4,
+                }}
+              >
+                <Lock size={16} style={{ flexShrink: 0 }} />
+                <span>
+                  <strong>Read-only access:</strong> Workspace creation, custom domain configuration, and governance defaults are restricted to <strong>Brand Owners and Reviewers</strong>. Team members work within their assigned workspace.
+                </span>
+              </div>
+            )}
             <div className="settings-form">
               <Field label="Workspace name" htmlFor="workspace-name">
                 <input
                   id="workspace-name"
                   value={settings.workspace}
+                  disabled={!isLead}
                   onChange={(event) => update('workspace', event.target.value)}
+                  style={!isLead ? { cursor: 'not-allowed', background: 'var(--paper-deep)', opacity: 0.8 } : undefined}
                 />
               </Field>
               <div className="form-row form-row--two">
@@ -173,13 +256,16 @@ export function Settings() {
                   <input
                     id="workspace-site"
                     value={settings.website}
+                    disabled={!isLead}
                     onChange={(event) => update('website', event.target.value)}
+                    style={!isLead ? { cursor: 'not-allowed', background: 'var(--paper-deep)', opacity: 0.8 } : undefined}
                   />
                 </Field>
                 <Field label="Timezone" htmlFor="workspace-timezone">
                   <Select
                     id="workspace-timezone"
                     value={settings.timezone}
+                    disabled={!isLead}
                     onChange={(val) => update('timezone', val)}
                     options={[
                       'Asia/Kolkata (GMT+5:30)',
@@ -190,10 +276,15 @@ export function Settings() {
                   />
                 </Field>
               </div>
-              <Field label="Default reviewer" htmlFor="workspace-reviewer" hint="New submissions are routed here first.">
+              <Field
+                label="Default reviewer"
+                htmlFor="workspace-reviewer"
+                hint={isLead ? 'New submissions are routed here first.' : 'Primary reviewer assigned to review your submissions.'}
+              >
                 <Select
                   id="workspace-reviewer"
                   value={settings.defaultReviewer}
+                  disabled={!isLead}
                   onChange={(val) => update('defaultReviewer', val)}
                   options={[
                     'Ashwik Saxena',
@@ -210,13 +301,38 @@ export function Settings() {
             <SectionHead
               title="Review defaults"
               description="How strict the workspace is by default. Individual rules can still override this."
-              action={<ShieldCheck size={18} className="settings-section__icon" />}
+              action={
+                isLead ? (
+                  <ShieldCheck size={18} className="settings-section__icon" />
+                ) : (
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      fontSize: '11.5px',
+                      color: 'var(--muted)',
+                      background: 'var(--cream)',
+                      padding: '3px 8px',
+                      borderRadius: '4px',
+                      border: '1px solid var(--line)',
+                    }}
+                  >
+                    <Lock size={12} color="var(--sage)" />
+                    Lead Governed
+                  </span>
+                )
+              }
             />
             <div className="settings-form">
               <Field
                 label="Publish threshold"
                 htmlFor="workspace-threshold"
-                hint="A piece below this score needs a reviewer decision before it can be approved."
+                hint={
+                  isLead
+                    ? 'A piece below this score needs a reviewer decision before it can be approved.'
+                    : 'Minimum score required for automatic clearance (configured by Brand Leads).'
+                }
               >
                 <div className="threshold-field">
                   <input
@@ -224,8 +340,10 @@ export function Settings() {
                     type="range"
                     min="60"
                     max="95"
+                    disabled={!isLead}
                     value={settings.threshold}
                     onChange={(event) => update('threshold', event.target.value)}
+                    style={!isLead ? { cursor: 'not-allowed', opacity: 0.7 } : undefined}
                   />
                   <span>
                     <strong>{settings.threshold}</strong>
@@ -238,12 +356,14 @@ export function Settings() {
                   label="Auto-assign new reviews"
                   description="Route a submission to the default reviewer as soon as the report is ready."
                   checked={settings.autoAssign}
+                  disabled={!isLead}
                   onChange={(value) => update('autoAssign', value)}
                 />
                 <ToggleRow
                   label="Require evidence on critical findings"
                   description="A blocking issue cannot be overridden without a cited guideline or source."
                   checked={settings.requireEvidence}
+                  disabled={!isLead}
                   onChange={(value) => update('requireEvidence', value)}
                 />
               </div>
@@ -289,23 +409,30 @@ export function Settings() {
               title="Team & Access Governance"
               description="Roles decide who can approve, reject, and publish guidelines."
               action={
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '11.5px', color: 'var(--muted)', background: 'var(--cream)', padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--line)' }}>
-                    Brand Code: <strong>{brandCode}</strong>
+                isLead ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '11.5px', color: 'var(--muted)', background: 'var(--cream)', padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--line)' }}>
+                      Brand Code: <strong>{brandCode}</strong>
+                    </span>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      icon={UserPlus}
+                      onClick={() => toast(`Share Brand Value Code "${brandCode}" with new team members.`, 'info')}
+                    >
+                      Invite member
+                    </Button>
+                  </div>
+                ) : (
+                  <span style={{ fontSize: '11.5px', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: '5px', background: 'var(--cream)', padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--line)' }}>
+                    <ShieldCheck size={14} color="var(--sage)" />
+                    Audited by Brand Leads
                   </span>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    icon={UserPlus}
-                    onClick={() => toast(`Share Brand Value Code "${brandCode}" with new team members.`, 'info')}
-                  >
-                    Invite member
-                  </Button>
-                </div>
+                )
               }
             />
 
-            {pendingAccounts.length > 0 && (
+            {isLead && pendingAccounts.length > 0 && (
               <div style={{ marginBottom: '20px', padding: '14px', background: 'var(--sage-wash)', border: '1.5px solid var(--sage-soft)', borderRadius: 'var(--radius-sm)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -368,13 +495,15 @@ export function Settings() {
                   <span className={cx('team-row__status', member.status === 'Invited' && 'is-invited')}>
                     <span /> {member.status}
                   </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toast(`Role controls are mocked for ${member.name.split(' ')[0]}.`, 'info')}
-                  >
-                    Manage
-                  </Button>
+                  {isLead && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => toast(`Role controls are mocked for ${member.name.split(' ')[0]}.`, 'info')}
+                    >
+                      Manage
+                    </Button>
+                  )}
                 </div>
               ))}
             </div>
@@ -382,9 +511,9 @@ export function Settings() {
               <Workflow size={16} />
               <p>
                 <strong>3-Stage Governance Hierarchy:</strong><br />
-                <strong>1. Brand Owner:</strong> Holds final approval authority, publishes guidelines, and manages workspace settings.<br />
-                <strong>2. Reviewer:</strong> Audits submissions, verifies guideline evidence, and requests changes.<br />
-                <strong>3. Team Member:</strong> Drafts content, runs pre-flight checks, and submits pieces for review.
+                <strong>1. Brand Owner / Lead:</strong> Exclusive authority to create workspaces, publish guidelines, verify users, and define thresholds.<br />
+                <strong>2. Reviewer / Higher-up:</strong> Audits submissions, verifies guideline evidence, and approves or requests changes.<br />
+                <strong>3. Team Member / Employee:</strong> Assigned to approved workspaces, runs pre-flight checks, and submits drafts. Cannot create or configure workspaces.
               </p>
             </div>
           </Panel>

@@ -362,6 +362,7 @@ export function Select({
   placeholder = 'Select option',
   className = '',
   id,
+  disabled = false,
   'aria-label': ariaLabelProp,
   ariaLabel: altAriaLabel,
 }) {
@@ -412,11 +413,13 @@ export function Select({
       <button
         type="button"
         id={id}
-        className="custom-select__trigger"
-        onClick={() => setOpen((prev) => !prev)}
+        disabled={disabled}
+        className={cx('custom-select__trigger', disabled && 'is-disabled')}
+        onClick={() => !disabled && setOpen((prev) => !prev)}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={ariaLabel}
+        style={disabled ? { cursor: 'not-allowed', opacity: 0.75, background: 'var(--paper-deep)' } : undefined}
       >
         <span className="custom-select__left">
           {Icon ? <Icon size={14} className="custom-select__icon" /> : null}
