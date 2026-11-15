@@ -13,6 +13,7 @@ import {
   LayoutTemplate,
   MessageSquare,
   ShieldCheck,
+  Sparkles,
   User,
   X,
 } from 'lucide-react'
@@ -109,7 +110,7 @@ function VisualPreview({ submission }) {
 
 export function ReviewDetail() {
   const { id } = useParams()
-  const { data, reviewSubmission, toast } = useApp()
+  const { data, reviewSubmission, toast, isLead } = useApp()
   const submission = data.submissions.find((item) => String(item.id) === String(id))
   const report = submission ? latestReport(submission) : null
   const [expanded, setExpanded] = useState(null)
@@ -364,60 +365,84 @@ export function ReviewDetail() {
                   )}
                 </div>
 
-                <div className="decision-block">
-                  <div className="decision-block__head">
-                    <h3>Your decision</h3>
-                    <span>
-                      <ShieldCheck size={14} /> Human approval required
-                    </span>
+                {isLead ? (
+                  <div className="decision-block">
+                    <div className="decision-block__head">
+                      <h3>Your decision</h3>
+                      <span>
+                        <ShieldCheck size={14} /> Human approval required
+                      </span>
+                    </div>
+                    <label htmlFor="review-comment">Reviewer note</label>
+                    <textarea
+                      id="review-comment"
+                      ref={commentRef}
+                      rows={3}
+                      value={comment}
+                      onChange={(event) => {
+                        setComment(event.target.value)
+                        if (error) setError('')
+                      }}
+                      placeholder="What should the creator know? Be specific and kind."
+                    />
+                    {error ? <p className="decision-block__error">{error}</p> : null}
+                    <div className="decision-actions">
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        icon={Check}
+                        loading={busy === 'approved'}
+                        disabled={Boolean(busy)}
+                        onClick={() => handleAction('approved')}
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        icon={MessageSquare}
+                        loading={busy === 'changes_requested'}
+                        disabled={Boolean(busy)}
+                        onClick={() => handleAction('changes_requested')}
+                      >
+                        Request changes
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        icon={X}
+                        loading={busy === 'rejected'}
+                        disabled={Boolean(busy)}
+                        onClick={() => handleAction('rejected')}
+                        className="btn--danger-text"
+                      >
+                        Reject
+                      </Button>
+                    </div>
                   </div>
-                  <label htmlFor="review-comment">Reviewer note</label>
-                  <textarea
-                    id="review-comment"
-                    ref={commentRef}
-                    rows={3}
-                    value={comment}
-                    onChange={(event) => {
-                      setComment(event.target.value)
-                      if (error) setError('')
-                    }}
-                    placeholder="What should the creator know? Be specific and kind."
-                  />
-                  {error ? <p className="decision-block__error">{error}</p> : null}
-                  <div className="decision-actions">
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      icon={Check}
-                      loading={busy === 'approved'}
-                      disabled={Boolean(busy)}
-                      onClick={() => handleAction('approved')}
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      icon={MessageSquare}
-                      loading={busy === 'changes_requested'}
-                      disabled={Boolean(busy)}
-                      onClick={() => handleAction('changes_requested')}
-                    >
-                      Request changes
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      icon={X}
-                      loading={busy === 'rejected'}
-                      disabled={Boolean(busy)}
-                      onClick={() => handleAction('rejected')}
-                      className="btn--danger-text"
-                    >
-                      Reject
-                    </Button>
+                ) : (
+                  <div className="decision-block decision-block--creator-view">
+                    <div className="decision-block__head">
+                      <h3>Governance Decision</h3>
+                      <StatusPill status={submission.status} />
+                    </div>
+                    {submission.reviewer_notes ? (
+                      <div className="creator-review-note">
+                        <span className="creator-review-note__label">Lead feedback &amp; instructions:</span>
+                        <blockquote>&quot;{submission.reviewer_notes}&quot;</blockquote>
+                      </div>
+                    ) : (
+                      <p className="creator-review-pending">
+                        <Clock3 size={14} /> This piece is in the review pipeline. Reviewer notes and sign-off decision will appear here.
+                      </p>
+                    )}
+                    <div className="creator-decision-actions">
+                      <Link to="/studio" className="btn btn--secondary btn--sm">
+                        <Sparkles size={14} /> Open Creator Studio to Revise
+                      </Link>
+                    </div>
                   </div>
-                </div>
+                )}
               </>
             ) : (
               <EmptyState

@@ -46,7 +46,11 @@ BANNED_TERMS = {
     "number one": ("facts", "Unsupported superlative", "A ranking claim needs a named, verifiable source and a date."),
     "utilize": ("terminology", "Formal filler", "Prefer 'use'. It is shorter and warmer."),
     "leverage": ("terminology", "Corporate filler", "Prefer a concrete verb: 'use', 'build on', or 'draw from'."),
-    "click here": ("terminology", "Non-descriptive link", "Link text should describe the destination."),
+    "click here": ("terminology", "Accessibility (WCAG 2.4.4): Non-descriptive link", "Link text should describe the specific destination rather than 'click here'."),
+    "read more": ("terminology", "Accessibility (WCAG 2.4.4): Non-descriptive link", "Links should provide meaningful context for assistive screen readers."),
+    "100% guaranteed": ("facts", "Unsupported promotional claim", "Absolute promotional guarantees create legal and compliance liabilities."),
+    "risk-free": ("facts", "Unsupported promotional claim", "Avoid absolute promotional promises without explicit terms."),
+    "miracle": ("tone", "Hyperbolic promotional claim", "Aster & Oak avoids theatrical or miracle claims in customer-facing editorial copy."),
     "cheap": ("tone", "Off-brand descriptor", "Describe value, not price, in customer-facing copy."),
 }
 
@@ -210,6 +214,36 @@ def analyse_content(
                 "Upload the layered source or confirm the primary lockup and clear space in the brand kit.",
                 guideline_hint="logo",
                 guideline_category=GuidelineCategory.visual,
+            )
+        )
+
+    if content_type == ContentType.html and "<img" in lowered and "alt=" not in lowered:
+        issues.append(
+            _issue(
+                guidelines,
+                IssueSeverity.warning,
+                IssueCategory.visual,
+                "Accessibility (WCAG 1.1.1): Missing image alt text",
+                "Images on brand web pages must have descriptive alt attributes for screen readers and search indexes.",
+                "Found <img> tag without an alt attribute.",
+                "Add an alt attribute describing the image subject, e.g. alt=\"Aster & Oak handcrafted stoneware bowl in organic sage\".",
+                guideline_hint="visual",
+                guideline_category=GuidelineCategory.visual,
+            )
+        )
+
+    if "red button" in lowered or "green box" in lowered:
+        issues.append(
+            _issue(
+                guidelines,
+                IssueSeverity.suggestion,
+                IssueCategory.terminology,
+                "Accessibility (WCAG 1.4.1): Color-only sensory instruction",
+                "Avoid referring exclusively to color to provide instructions, as users with visual impairments may not distinguish it.",
+                "Found color-dependent instruction in content.",
+                "Combine color with text labels or structural cues (e.g. 'the primary Publish button' rather than 'the green button').",
+                guideline_hint="voice",
+                guideline_category=GuidelineCategory.terminology,
             )
         )
 

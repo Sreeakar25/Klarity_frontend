@@ -6,9 +6,11 @@ import {
   Check,
   CircleAlert,
   FileText,
+  Lock,
   PencilLine,
   Plus,
   Search,
+  Shield,
   ShieldCheck,
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
@@ -292,7 +294,7 @@ function GuidelineDrawer({ open, onClose, editing }) {
 }
 
 export function Guidelines() {
-  const { data } = useApp()
+  const { data, isLead, toast } = useApp()
   const [params, setParams] = useSearchParams()
   const [category, setCategory] = useState('all')
   const [query, setQuery] = useState('')
@@ -329,12 +331,20 @@ export function Guidelines() {
   }
 
   const openNew = () => {
+    if (!isLead) {
+      toast('Guidelines are authored by Leads & Higher-ups. Team members use them as reference.', 'warn')
+      return
+    }
     setEditing(null)
     setDrawerOpen(true)
   }
 
   const openEdit = () => {
     if (!selected) return
+    if (!isLead) {
+      toast('Only Brand Leads and Higher-ups have permission to edit live guidelines.', 'warn')
+      return
+    }
     setEditing(selected)
     setDrawerOpen(true)
   }
@@ -350,9 +360,15 @@ export function Guidelines() {
           <Badge variant="sage" dot dotStatus="online">
             <strong>{data.guidelines.length}</strong> active rules
           </Badge>
-          <Button icon={Plus} onClick={openNew}>
-            New guideline
-          </Button>
+          {isLead ? (
+            <Button icon={Plus} onClick={openNew}>
+              New guideline
+            </Button>
+          ) : (
+            <span className="lead-governed-badge" title="Guidelines are authored by brand leads and higher-ups">
+              <Lock size={13} /> Governed by Leads
+            </span>
+          )}
         </div>
       </section>
 
@@ -437,10 +453,31 @@ export function Guidelines() {
                   {formatDate(selected.updated_at, { year: true })}
                 </p>
               </div>
-              <Button variant="secondary" size="sm" icon={PencilLine} onClick={openEdit}>
-                Edit
-              </Button>
+              {isLead ? (
+                <Button variant="secondary" size="sm" icon={PencilLine} onClick={openEdit}>
+                  Edit
+                </Button>
+              ) : (
+                <span className="author-locked-chip" title="Only brand leads and higher-ups can edit guidelines">
+                  <Lock size={12} /> Lead Managed
+                </span>
+              )}
             </header>
+
+            <div className="guideline-role-notice">
+              <ShieldCheck size={15} />
+              <span>
+                {isLead ? (
+                  <>
+                    <strong>Governance Mode:</strong> You are authoring as a Brand Lead. Guidelines published here apply directly to all pre-flight and editorial checks.
+                  </>
+                ) : (
+                  <>
+                    <strong>Editorial Reference View:</strong> Guidelines are authored and governed by Brand Leads &amp; Higher-ups. Team members use these approved rules and examples when crafting copy.
+                  </>
+                )}
+              </span>
+            </div>
 
             <div className="guideline-detail__body">
               {parseGuidelineContent(selected.content, selected.category).content.split(/\n{2,}/).map((paragraph, index) => (

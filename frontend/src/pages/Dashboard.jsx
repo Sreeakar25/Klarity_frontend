@@ -18,7 +18,6 @@ import {
 import { useApp } from '../context/AppContext'
 import { PulseChart } from '../components/Charts'
 import { AnimatedValue } from '../components/AnimatedValue'
-import { CreatorStudio } from '../components/CreatorStudio'
 import { animateHorizontalBars } from '../lib/animations'
 import {
   Button,
@@ -107,9 +106,8 @@ function ActivityIcon({ kind }) {
 }
 
 export function Dashboard({ onNewReview }) {
-  const { data, currentUser, toast } = useApp()
+  const { data, currentUser } = useApp()
   const { stats, submissions, trends, issue_breakdown: breakdown, coverage, activity } = data
-  const [roleMode, setRoleMode] = useState('owner')
   const [period, setPeriod] = useState('30d')
 
   const days = period === '7d' ? 7 : period === '14d' ? 14 : 30
@@ -180,43 +178,21 @@ export function Dashboard({ onNewReview }) {
             {greeting()}, {currentUser}<span className="accent-dot">.</span>
           </h1>
           <p>
-            {roleMode === 'member' ? (
-              <>
-                <strong>Stage 3 · Team Member:</strong> Pre-flight your draft against Aster &amp; Oak brand rules before submitting for editorial review.
-              </>
-            ) : roleMode === 'reviewer' ? (
-              <>
-                <strong>Stage 2 · Reviewer:</strong> Audit incoming submissions, verify guideline evidence, provide feedback, and request changes.
-              </>
-            ) : (
-              <>
-                <strong>Stage 1 · Brand Owner:</strong> Full brand governance oversight across 12 channels holding at <strong>{Math.round(stats.avg_score)}/100</strong>.
-              </>
-            )}
+            Aster &amp; Oak is holding at <strong>{Math.round(stats.avg_score)}/100</strong> across 12 channels.
+            Here is where the next decision is waiting.
           </p>
         </div>
         <div className="page-hero__actions">
-          <Segmented
-            label="Workspace perspective"
-            value={roleMode}
-            onChange={setRoleMode}
-            options={[
-              { value: 'owner', label: '1. Brand Owner' },
-              { value: 'reviewer', label: '2. Reviewer' },
-              { value: 'member', label: '3. Team Member' },
-            ]}
-          />
+          <Link to="/studio" className="btn-hero-studio">
+            <Sparkles size={14} /> Open Creator Studio &rarr;
+          </Link>
           <span className="date-stamp">
             <Calendar size={14} /> {todayLabel}
           </span>
         </div>
       </section>
 
-      {roleMode === 'member' ? (
-        <CreatorStudio submissions={submissions} onNewReview={onNewReview} toast={toast} />
-      ) : (
-        <>
-          <section className="metric-strip" aria-label="Workspace metrics">
+      <section className="metric-strip" aria-label="Workspace metrics">
         <Metric
           label="Content reviewed"
           value={formatCount(stats.total_submissions)}
@@ -517,8 +493,6 @@ export function Dashboard({ onNewReview }) {
           </ol>
         </Panel>
       </section>
-      </>
-      )}
 
       <footer className="page-foot">
         <span>Klarity v0.1 · localhost:5000</span>

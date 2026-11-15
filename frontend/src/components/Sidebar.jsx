@@ -20,6 +20,7 @@ import { animateSlidingPill } from '../lib/animations'
 
 const items = [
   { to: '/', label: 'Overview', icon: LayoutDashboard },
+  { to: '/studio', label: 'Creator Studio', icon: Sparkles },
   { to: '/reviews', label: 'Reviews', icon: FileClock, badge: true },
   { to: '/calendar', label: 'Calendar', icon: Calendar },
   { to: '/guidelines', label: 'Guidelines', icon: BookOpen },
