@@ -20,12 +20,15 @@ import { useApp } from '../context/AppContext'
 import { AnimatedValue } from '../components/AnimatedValue'
 import { animateHorizontalBars } from '../lib/animations'
 import {
+  Badge,
   Button,
   CategoryTag,
+  CodeBlock,
   EmptyState,
   Panel,
   ScorePill,
   SeverityPill,
+  StatusDot,
   StatusPill,
 } from '../components/UI'
 import {
@@ -298,6 +301,16 @@ export function ReviewDetail() {
                               </span>
                               <span className="issue-item__title">
                                 <span>
+                                  <StatusDot
+                                    status={
+                                      issue.severity === 'critical'
+                                        ? 'failed'
+                                        : issue.severity === 'warning'
+                                          ? 'warning'
+                                          : 'busy'
+                                    }
+                                    size="xs"
+                                  />
                                   <SeverityPill severity={issue.severity} />
                                   <CategoryTag category={issue.category} />
                                 </span>

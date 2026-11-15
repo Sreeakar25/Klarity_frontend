@@ -13,8 +13,76 @@ import { useApp } from '../context/AppContext'
 import { PulseChart, VolumeBars, Heatmap } from '../components/Charts'
 import { Avatar, CategoryTag, Panel, SectionHead, Segmented } from '../components/UI'
 import { AnimatedValue } from '../components/AnimatedValue'
+import { FocusCity } from '../components/ui/focus-city'
 import { categoryLabels, cx, formatCount } from '../lib/utils'
 import { animateHorizontalBars } from '../lib/animations'
+
+function buildReviewDays(submissions = []) {
+  const DAY_MS = 86_400_000
+  const now = new Date()
+  
+  const subsByDate = new Map()
+  submissions.forEach((sub) => {
+    if (!sub.submitted_at) return
+    const dateStr = sub.submitted_at.slice(0, 10)
+    if (!subsByDate.has(dateStr)) subsByDate.set(dateStr, [])
+    subsByDate.get(dateStr).push(sub)
+  })
+
+  const sessionTemplates = [
+    { title: 'Brand voice & tone audit', minutes: 55, startedAt: '09:30' },
+    { title: 'Packaging claims review', minutes: 40, startedAt: '11:15' },
+    { title: 'Sustainability evidence verification', minutes: 75, startedAt: '14:00' },
+    { title: 'Terminology & banned words scan', minutes: 35, startedAt: '16:20' },
+    { title: 'Editorial proofing · Campaign copy', minutes: 60, startedAt: '10:00' },
+    { title: 'Wholesale deck compliance', minutes: 45, startedAt: '15:10' },
+  ]
+
+  const totalDays = 84
+  return Array.from({ length: totalDays }, (_, index) => {
+    const d = new Date(now.getTime() - (totalDays - 1 - index) * DAY_MS)
+    const date = d.toISOString().slice(0, 10)
+    const dayOfWeek = d.getUTCDay()
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+
+    const realSubs = subsByDate.get(date) || []
+    let sessions = []
+
+    if (realSubs.length > 0) {
+      sessions = realSubs.map((s, idx) => ({
+        id: `sub-${s.id || idx}`,
+        title: s.title || `Review #${s.id}`,
+        minutes: 45 + ((s.id * 13) % 45),
+        startedAt: s.submitted_at ? s.submitted_at.slice(11, 16) : '10:30',
+      }))
+    } else {
+      const resting = isWeekend && index % 3 !== 0
+      let seed = Math.imul(index + 29, 0x45d9f3b)
+      seed = Math.imul(seed ^ (seed >>> 16), 0x45d9f3b)
+      seed = (seed ^ (seed >>> 16)) >>> 0
+
+      // Thursdays and Tuesdays are peak review days in Klarity
+      const isPeak = dayOfWeek === 4 || dayOfWeek === 2
+      const count = resting ? 0 : isPeak ? 3 + (seed % 2) : isWeekend ? 1 : 1 + (seed % 3)
+
+      for (let s = 0; s < count; s++) {
+        const tmpl = sessionTemplates[(seed + s * 3) % sessionTemplates.length]
+        const mins = Math.max(25, tmpl.minutes + ((seed + s * 7) % 30) - 10)
+        sessions.push({
+          id: `${date}-sess-${s}`,
+          title: tmpl.title,
+          minutes: mins,
+          startedAt: tmpl.startedAt,
+        })
+      }
+    }
+
+    return {
+      date,
+      sessions,
+    }
+  })
+}
 
 const flaggedTerms = [
   { term: 'seamless', count: 34, change: 8 },
@@ -44,6 +112,7 @@ export function Insights() {
   const [period, setPeriod] = useState('30d')
   const days = period === '7d' ? 7 : period === '14d' ? 14 : 30
   const chartData = data.trends.slice(-days)
+  const reviewDays = useMemo(() => buildReviewDays(data.submissions), [data.submissions])
 
   const categories = useMemo(() => {
     const totals = data.issue_breakdown.reduce((result, item) => {
@@ -240,13 +309,14 @@ export function Insights() {
       </section>
 
       <section className="insights-row insights-row--lower">
-        <Panel className="heat-panel">
-          <SectionHead
+        <Panel className="heat-panel heat-panel--focus-city">
+          <FocusCity
+            days={reviewDays}
             title="When reviews happen"
-            description="Six weeks of review volume, Monday through Sunday."
-            action={<span className="heat-panel__key">Inner ring = busier</span>}
+            description="Interactive 3D skyline & calendar heatmap. Drag to orbit."
+            defaultView="city"
+            totalContent={data.stats.total_submissions}
           />
-          <Heatmap data={heatValues.map((value) => ({ value }))} />
           <div className="heat-panel__note">
             <span>
               <strong>Thursday</strong> is the busiest review day. <strong>Monday morning</strong> is the quietest.

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   ArrowUpRight,
+  Calendar,
   ChevronLeft,
   ChevronRight,
   FileText,
@@ -14,11 +15,14 @@ import {
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import {
+  Badge,
   Button,
   EmptyState,
+  Kbd,
   Panel,
   ScorePill,
   Select,
+  StatusDot,
   StatusPill,
   Tabs,
 } from '../components/UI'
@@ -164,6 +168,14 @@ export function Reviews({ onNewReview }) {
               ]}
               aria-label="Sort reviews"
             />
+            <Button
+              variant="outline"
+              size="sm"
+              icon={Calendar}
+              onClick={() => navigate('/calendar')}
+            >
+              Calendar view
+            </Button>
           </div>
         </div>
 
@@ -214,7 +226,7 @@ export function Reviews({ onNewReview }) {
                         </td>
                         <td>
                           <span className="owner-cell">
-                            <span className="owner-cell__dot" />
+                            <StatusDot status="idle" size="xs" />
                             {item.submitted_by}
                           </span>
                         </td>

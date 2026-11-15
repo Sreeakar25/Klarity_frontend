@@ -13,6 +13,7 @@ import { ReviewDetail } from './pages/ReviewDetail'
 import { Guidelines } from './pages/Guidelines'
 import { Assets } from './pages/Assets'
 import { Insights } from './pages/Insights'
+import { Calendar } from './pages/Calendar'
 import { Settings } from './pages/Settings'
 import { Hero } from './pages/Hero'
 import { Login } from './pages/Login'
@@ -105,6 +106,7 @@ function AppShell() {
               <Route path="/guidelines" element={<Guidelines />} />
               <Route path="/assets" element={<Assets />} />
               <Route path="/insights" element={<Insights />} />
+              <Route path="/calendar" element={<Calendar onNewReview={() => setReviewOpen(true)} />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/hero" element={<Hero />} />
               <Route path="/login" element={<Login />} />

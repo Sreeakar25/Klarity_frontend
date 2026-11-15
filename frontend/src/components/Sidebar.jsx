@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import {
   BookOpen,
+  Calendar,
   ChartNoAxesCombined,
   ChevronDown,
   FileClock,
@@ -20,6 +21,7 @@ import { animateSlidingPill } from '../lib/animations'
 const items = [
   { to: '/', label: 'Overview', icon: LayoutDashboard },
   { to: '/reviews', label: 'Reviews', icon: FileClock, badge: true },
+  { to: '/calendar', label: 'Calendar', icon: Calendar },
   { to: '/guidelines', label: 'Guidelines', icon: BookOpen },
   { to: '/assets', label: 'Brand assets', icon: Images },
   { to: '/insights', label: 'Insights', icon: ChartNoAxesCombined },

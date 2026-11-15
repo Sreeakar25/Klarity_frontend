@@ -16,7 +16,7 @@ import {
   X,
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
-import { Avatar, Button, IconButton } from './UI'
+import { Avatar, Button, IconButton, Kbd, StatusDot } from './UI'
 import { CommandPalette } from './CommandPalette'
 import { actionLabel, cx, timeAgo } from '../lib/utils'
 import { gsap } from 'gsap'
@@ -135,7 +135,7 @@ export function Topbar({ onMenu, onNewReview, currentPath }) {
           <button className="search-trigger" type="button" onClick={() => setPaletteOpen(true)}>
             <Search size={16} />
             <span>Search reviews and guidelines</span>
-            <kbd>⌘ K</kbd>
+            <Kbd>⌘K</Kbd>
           </button>
         </div>
 
