@@ -1123,29 +1123,16 @@ export function Assets() {
                     Visual swatches, paste tokens/CSS, or auto-extract from moodboard
                   </p>
                 </div>
-                <div className="palette-studio__nav">
-                  <button
-                    type="button"
-                    className={cx('palette-studio__tab', paletteTab === 'builder' && 'is-active')}
-                    onClick={() => setPaletteTab('builder')}
-                  >
-                    <Palette size={13} /> Visual Builder
-                  </button>
-                  <button
-                    type="button"
-                    className={cx('palette-studio__tab', paletteTab === 'paste' && 'is-active')}
-                    onClick={() => setPaletteTab('paste')}
-                  >
-                    <Code size={13} /> Paste Code / CSS
-                  </button>
-                  <button
-                    type="button"
-                    className={cx('palette-studio__tab', paletteTab === 'extract' && 'is-active')}
-                    onClick={() => setPaletteTab('extract')}
-                  >
-                    <Pipette size={13} /> Extract from Image
-                  </button>
-                </div>
+                <Segmented
+                  label="Palette Studio Mode"
+                  value={paletteTab}
+                  onChange={setPaletteTab}
+                  options={[
+                    { value: 'builder', label: 'Visual Builder', icon: Palette },
+                    { value: 'paste', label: 'Paste Code / CSS', icon: Code },
+                    { value: 'extract', label: 'Extract from Image', icon: Pipette },
+                  ]}
+                />
               </div>
 
               {paletteTab === 'builder' && (

@@ -675,6 +675,10 @@ ol {
 
 .segmented__item {
   height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   padding: 0 11px;
   color: var(--muted);
   background: transparent;
@@ -682,8 +686,16 @@ ol {
   border-radius: 7px;
   font-size: 11px;
   font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
   transform-origin: center center;
   transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1), color 140ms var(--ease-out);
+}
+
+.segmented__item-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .segmented__item:hover {
@@ -8610,39 +8622,9 @@ kbd {
   border-bottom: 1px solid var(--line-subtle, rgba(0, 0, 0, 0.06));
 }
 
-.palette-studio__nav {
-  display: inline-flex;
-  gap: 3px;
+.palette-studio .segmented {
   background: var(--paper);
-  padding: 3px;
-  border-radius: var(--radius-sm);
   border: 1px solid var(--line);
-}
-
-.palette-studio__tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 10px;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--muted);
-  background: transparent;
-  border: 0;
-  border-radius: calc(var(--radius-sm) - 2px);
-  cursor: pointer;
-  transition: all 140ms var(--ease-out);
-  white-space: nowrap;
-}
-
-.palette-studio__tab:hover {
-  color: var(--ink);
-}
-
-.palette-studio__tab.is-active {
-  background: var(--paper-raised);
-  color: var(--ink);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 0 0 1px var(--line);
 }
 
 .palette-builder-pane {

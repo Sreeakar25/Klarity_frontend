@@ -98,13 +98,14 @@ export function Avatar({ name = '', size = 'md', className = '' }) {
   )
 }
 
-export function Segmented({ options, value, onChange, label }) {
+export function Segmented({ options, value, onChange, label, className = '' }) {
   const containerRef = useRef(null)
   const pillRef = useRef(null)
   const initialRef = useRef(false)
 
   useLayoutEffect(() => {
-    const timer = requestAnimationFrame(() => {
+    let timer
+    const update = () => {
       animateSlidingPill({
         containerEl: containerRef.current,
         pillEl: pillRef.current,
@@ -112,12 +113,22 @@ export function Segmented({ options, value, onChange, label }) {
         isInitialRef: initialRef,
         isVertical: false,
       })
-    })
-    return () => cancelAnimationFrame(timer)
+    }
+    timer = requestAnimationFrame(update)
+    const timeout = setTimeout(update, 50)
+    return () => {
+      cancelAnimationFrame(timer)
+      clearTimeout(timeout)
+    }
   }, [value])
 
   return (
-    <div ref={containerRef} className="segmented segmented--animated" role="group" aria-label={label}>
+    <div
+      ref={containerRef}
+      className={cx('segmented segmented--animated', className)}
+      role="group"
+      aria-label={label}
+    >
       <div ref={pillRef} className="segmented__pill" aria-hidden="true" />
       {options.map((option) => (
         <button
@@ -127,7 +138,12 @@ export function Segmented({ options, value, onChange, label }) {
           onClick={() => onChange(option.value)}
           aria-pressed={value === option.value}
         >
-          {option.label}
+          {option.icon && (
+            <span className="segmented__item-icon" aria-hidden="true">
+              <option.icon size={13} />
+            </span>
+          )}
+          <span>{option.label}</span>
         </button>
       ))}
     </div>
