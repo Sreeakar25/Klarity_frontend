@@ -43,6 +43,7 @@ export function AppProvider({ children }) {
     }
   })
   const [toasts, setToasts] = useState([])
+  const [pendingApprovalsCount, setPendingApprovalsCount] = useState(0)
   const timers = useRef(new Map())
   const toast = useCallback((message, tone = 'good') => {
     const id = `${Date.now()}-${Math.random()}`
@@ -62,6 +63,9 @@ export function AppProvider({ children }) {
       const payload = await api.bootstrap()
       setData(payload)
       setConnected(true)
+      api.pendingAccounts().then(accs => {
+        if (Array.isArray(accs)) setPendingApprovalsCount(accs.length)
+      }).catch(() => {})
       return payload
     } catch (error) {
       setConnected(false)
@@ -174,6 +178,8 @@ export function AppProvider({ children }) {
     visibilitySettings,
     updateRoleVisibility,
     canViewModule,
+    pendingApprovalsCount,
+    setPendingApprovalsCount,
     createSubmission: payload => mutate(() => api.createSubmission(payload), 'Review complete. The report is ready.'),
     reviewSubmission: (id, action, comment) => mutate(() => api.reviewSubmission(id, {
       action, comment: comment || null, performed_by: user.username,

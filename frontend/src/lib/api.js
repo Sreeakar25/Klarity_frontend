@@ -24,6 +24,9 @@ async function request(path, options = {}) {
 export const api = {
   me: () => request('/auth/me'),
   brandCodeHint: () => request('/auth/brand-code-hint'),
+  workspaceSettings: () => request('/auth/workspace-settings'),
+  updateWorkspaceSettings: (payload) =>
+    request('/auth/workspace-settings', { method: 'PATCH', body: JSON.stringify(payload) }),
   pendingAccounts: () => request('/auth/pending-accounts'),
   verifyAccount: (payload) =>
     request('/auth/verify-account', { method: 'POST', body: JSON.stringify(payload) }),

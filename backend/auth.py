@@ -130,6 +130,12 @@ class ApproveAccountRequest(BaseModel):
     approve: bool = True
 
 
+class UpdateWorkspaceRequest(BaseModel):
+    brand_name: str | None = Field(default=None, max_length=120)
+    brand_values: str | None = Field(default=None, max_length=500)
+    brand_code: str | None = Field(default=None, max_length=32)
+
+
 router = APIRouter(prefix="/api/auth", tags=["accounts"], dependencies=[Depends(check_origin)])
 
 
@@ -252,6 +258,57 @@ def verify_account(payload: ApproveAccountRequest, account: Account = Depends(cu
         db.delete(target)
         db.commit()
         return {"message": f"Account '{target.username}' rejected and removed."}
+
+
+@router.get("/workspace-settings")
+def get_workspace_settings(db: Session = Depends(get_db)):
+    setting = db.get(WorkspaceSettings, 1)
+    if not setting:
+        setting = WorkspaceSettings(
+            id=1,
+            brand_name="Aster & Oak",
+            brand_values="Authenticity, craft, sustainability, quiet confidence",
+            brand_code="KLARITY-2026",
+        )
+        db.add(setting)
+        db.commit()
+    return {
+        "brand_name": setting.brand_name,
+        "brand_values": setting.brand_values,
+        "brand_code": setting.brand_code,
+    }
+
+
+@router.patch("/workspace-settings")
+def update_workspace_settings(
+    payload: UpdateWorkspaceRequest,
+    account: Account = Depends(current_account),
+    db: Session = Depends(get_db),
+):
+    if getattr(account, "role", "member") not in ("owner", "admin"):
+        raise HTTPException(403, "Only the Brand Owner can modify workspace settings.")
+    setting = db.get(WorkspaceSettings, 1)
+    if not setting:
+        setting = WorkspaceSettings(
+            id=1,
+            brand_name="Aster & Oak",
+            brand_values="Authenticity, craft, sustainability, quiet confidence",
+            brand_code="KLARITY-2026",
+        )
+        db.add(setting)
+    if payload.brand_name is not None and payload.brand_name.strip():
+        setting.brand_name = payload.brand_name.strip()
+    if payload.brand_values is not None:
+        setting.brand_values = payload.brand_values.strip()
+    if payload.brand_code is not None and payload.brand_code.strip():
+        setting.brand_code = payload.brand_code.strip().upper()
+    db.commit()
+    return {
+        "message": "Workspace settings updated successfully.",
+        "brand_name": setting.brand_name,
+        "brand_values": setting.brand_values,
+        "brand_code": setting.brand_code,
+    }
 
 
 @router.get("/me")

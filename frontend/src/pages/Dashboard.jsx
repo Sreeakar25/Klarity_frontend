@@ -8,15 +8,24 @@ import {
   Check,
   CircleDot,
   Clock3,
+  Copy,
+  Edit3,
   FileCheck2,
   FileClock,
   FileText,
   Image,
+  KeyRound,
   LayoutTemplate,
   Plus,
+  Save,
+  ShieldCheck,
   Sparkles,
+  UserCheck,
+  UserX,
+  Users,
   X,
 } from 'lucide-react'
+import { api } from '../lib/api'
 import { useApp } from '../context/AppContext'
 import { PulseChart } from '../components/Charts'
 import { AnimatedValue } from '../components/AnimatedValue'
@@ -108,9 +117,101 @@ function ActivityIcon({ kind }) {
 }
 
 export function Dashboard({ onNewReview }) {
-  const { data, currentUser, isLead } = useApp()
+  const { data, currentUser, isLead, isOwner, toast } = useApp()
   const { stats, submissions, trends, issue_breakdown: breakdown, coverage, activity } = data
   const [period, setPeriod] = useState('30d')
+
+  // Owner workspace settings & user verification state
+  const [pendingAccounts, setPendingAccounts] = useState([])
+  const [loadingPending, setLoadingPending] = useState(false)
+  const [verifyingId, setVerifyingId] = useState(null)
+  const [brandMeta, setBrandMeta] = useState({
+    brand_name: 'Aster & Oak',
+    brand_values: 'Authenticity, craft, sustainability, quiet confidence',
+    brand_code: 'KLARITY-2026',
+  })
+  const [isEditingBrand, setIsEditingBrand] = useState(false)
+  const [editBrandName, setEditBrandName] = useState('Aster & Oak')
+  const [editBrandCode, setEditBrandCode] = useState('KLARITY-2026')
+  const [editBrandValues, setEditBrandValues] = useState('Authenticity, craft, sustainability, quiet confidence')
+  const [savingBrand, setSavingBrand] = useState(false)
+
+  const fetchPending = async () => {
+    if (!isOwner) return
+    try {
+      setLoadingPending(true)
+      const list = await api.pendingAccounts()
+      setPendingAccounts(list || [])
+    } catch {
+      // ignore
+    } finally {
+      setLoadingPending(false)
+    }
+  }
+
+  const fetchWorkspaceMeta = async () => {
+    try {
+      const res = await api.workspaceSettings()
+      if (res?.brand_code) {
+        setBrandMeta(res)
+        setEditBrandName(res.brand_name || 'Aster & Oak')
+        setEditBrandCode(res.brand_code || 'KLARITY-2026')
+        setEditBrandValues(res.brand_values || '')
+      }
+    } catch {
+      api.brandCodeHint().then((res) => {
+        if (res?.brand_code) {
+          setBrandMeta((prev) => ({ ...prev, ...res }))
+          setEditBrandName(res.brand_name || 'Aster & Oak')
+          setEditBrandCode(res.brand_code || 'KLARITY-2026')
+        }
+      }).catch(() => {})
+    }
+  }
+
+  useEffect(() => {
+    if (isOwner) {
+      fetchPending()
+    }
+    fetchWorkspaceMeta()
+  }, [isOwner])
+
+  const handleVerify = async (accountId, approve) => {
+    try {
+      setVerifyingId(accountId)
+      const res = await api.verifyAccount({ account_id: accountId, approve })
+      toast(res.message, approve ? 'good' : 'warn')
+      await fetchPending()
+    } catch (err) {
+      toast(err.message, 'warn')
+    } finally {
+      setVerifyingId(null)
+    }
+  }
+
+  const handleSaveBrand = async (e) => {
+    e.preventDefault()
+    if (!isOwner) return
+    try {
+      setSavingBrand(true)
+      const res = await api.updateWorkspaceSettings({
+        brand_name: editBrandName,
+        brand_code: editBrandCode,
+        brand_values: editBrandValues,
+      })
+      setBrandMeta({
+        brand_name: res.brand_name,
+        brand_code: res.brand_code,
+        brand_values: res.brand_values,
+      })
+      setIsEditingBrand(false)
+      toast('Workspace brand identity & code updated successfully!', 'good')
+    } catch (err) {
+      toast(err.message, 'warn')
+    } finally {
+      setSavingBrand(false)
+    }
+  }
 
   const days = period === '7d' ? 7 : period === '14d' ? 14 : 30
   const chartData = trends.slice(-days)
@@ -244,6 +345,402 @@ export function Dashboard({ onNewReview }) {
           </span>
         </div>
       </section>
+
+      {/* BRAND OWNER EXCLUSIVE: COMMAND & VERIFICATION CENTER */}
+      {isOwner && (
+        <section
+          className="owner-command-card"
+          aria-label="Owner Command & Verification Center"
+          style={{
+            marginBottom: '28px',
+            borderRadius: '12px',
+            border: '1.5px solid rgba(169, 122, 50, 0.35)',
+            background: 'linear-gradient(135deg, rgba(251, 248, 241, 0.95) 0%, rgba(246, 241, 230, 0.98) 100%)',
+            boxShadow: '0 4px 20px -2px rgba(59, 36, 24, 0.07)',
+            overflow: 'hidden',
+          }}
+        >
+          {/* Card Header */}
+          <div
+            style={{
+              padding: '16px 20px',
+              borderBottom: '1px solid rgba(59, 36, 24, 0.08)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '12px',
+              background: 'rgba(169, 122, 50, 0.06)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '8px',
+                  background: 'var(--clay)',
+                  color: '#fff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <ShieldCheck size={18} />
+              </div>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <strong style={{ fontSize: '14.5px', color: 'var(--ink)' }}>
+                    Brand Owner Command &amp; Access Controls
+                  </strong>
+                  <span
+                    style={{
+                      fontSize: '11px',
+                      padding: '2px 8px',
+                      borderRadius: '12px',
+                      background: 'var(--clay)',
+                      color: '#fff',
+                      fontWeight: 600,
+                      letterSpacing: '0.03em',
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    Owner Exclusive
+                  </span>
+                </div>
+                <p style={{ margin: 0, fontSize: '12px', color: 'var(--ink-soft)' }}>
+                  Authorize incoming reviewer/creator sign-ups and configure brand values &amp; security access code.
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 12px',
+                  background: 'rgba(255, 255, 255, 0.85)',
+                  border: '1px solid rgba(59, 36, 24, 0.12)',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  color: 'var(--ink)',
+                }}
+              >
+                <KeyRound size={13} color="var(--clay)" />
+                <span>Brand Code:</span>
+                <strong style={{ letterSpacing: '0.04em', color: 'var(--clay-deep)' }}>
+                  {brandMeta.brand_code || 'KLARITY-2026'}
+                </strong>
+                <button
+                  type="button"
+                  title="Copy Brand Code"
+                  onClick={() => {
+                    navigator.clipboard.writeText(brandMeta.brand_code || 'KLARITY-2026')
+                    toast(`Brand code "${brandMeta.brand_code || 'KLARITY-2026'}" copied to clipboard.`, 'good')
+                  }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '2px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    color: 'var(--ink-soft)',
+                  }}
+                >
+                  <Copy size={12} />
+                </button>
+              </div>
+
+              <Button
+                size="sm"
+                variant={isEditingBrand ? 'ghost' : 'secondary'}
+                icon={isEditingBrand ? X : Edit3}
+                onClick={() => setIsEditingBrand(!isEditingBrand)}
+              >
+                {isEditingBrand ? 'Cancel' : 'Edit Brand & Code'}
+              </Button>
+            </div>
+          </div>
+
+          {/* Quick Edit Brand Identity Drawer / Form */}
+          {isEditingBrand && (
+            <form
+              onSubmit={handleSaveBrand}
+              style={{
+                padding: '18px 20px',
+                background: 'rgba(255, 255, 255, 0.95)',
+                borderBottom: '1px solid rgba(59, 36, 24, 0.08)',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                gap: '14px',
+                alignItems: 'end',
+              }}
+            >
+              <div>
+                <label
+                  htmlFor="dash-brand-name"
+                  style={{ display: 'block', fontSize: '11.5px', fontWeight: 600, color: 'var(--ink)', marginBottom: '5px' }}
+                >
+                  Brand / Workspace Name
+                </label>
+                <input
+                  id="dash-brand-name"
+                  type="text"
+                  value={editBrandName}
+                  onChange={(e) => setEditBrandName(e.target.value)}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    fontSize: '13px',
+                    borderRadius: '6px',
+                    border: '1px solid var(--line)',
+                    background: '#fff',
+                    color: 'var(--ink)',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="dash-brand-code"
+                  style={{ display: 'block', fontSize: '11.5px', fontWeight: 600, color: 'var(--ink)', marginBottom: '5px' }}
+                >
+                  Brand Access Code (Required on Sign-up)
+                </label>
+                <input
+                  id="dash-brand-code"
+                  type="text"
+                  value={editBrandCode}
+                  onChange={(e) => setEditBrandCode(e.target.value.toUpperCase())}
+                  required
+                  placeholder="e.g. KLARITY-2026"
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    fontSize: '13px',
+                    fontFamily: 'monospace',
+                    fontWeight: 700,
+                    letterSpacing: '0.05em',
+                    borderRadius: '6px',
+                    border: '1px solid var(--line)',
+                    background: '#fff',
+                    color: 'var(--clay-deep)',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="dash-brand-values"
+                  style={{ display: 'block', fontSize: '11.5px', fontWeight: 600, color: 'var(--ink)', marginBottom: '5px' }}
+                >
+                  Core Brand Values &amp; Tenets
+                </label>
+                <input
+                  id="dash-brand-values"
+                  type="text"
+                  value={editBrandValues}
+                  onChange={(e) => setEditBrandValues(e.target.value)}
+                  placeholder="e.g. Authenticity, craft, sustainability"
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    fontSize: '13px',
+                    borderRadius: '6px',
+                    border: '1px solid var(--line)',
+                    background: '#fff',
+                    color: 'var(--ink)',
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <Button
+                  type="submit"
+                  size="sm"
+                  variant="primary"
+                  icon={Save}
+                  disabled={savingBrand}
+                >
+                  {savingBrand ? 'Saving…' : 'Save Changes'}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setIsEditingBrand(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          )}
+
+          {/* Pending Verification Requests Section */}
+          <div style={{ padding: '18px 20px' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '12px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Users size={16} color="var(--clay)" />
+                <strong style={{ fontSize: '13.5px', color: 'var(--ink)' }}>
+                  Pending Verification &amp; Approval Requests
+                </strong>
+                {pendingAccounts.length > 0 ? (
+                  <span
+                    style={{
+                      background: '#ef4444',
+                      color: '#fff',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      padding: '1px 8px',
+                      borderRadius: '10px',
+                    }}
+                  >
+                    {pendingAccounts.length} waiting
+                  </span>
+                ) : (
+                  <span
+                    style={{
+                      background: 'rgba(34, 197, 94, 0.15)',
+                      color: '#15803d',
+                      fontSize: '11.5px',
+                      fontWeight: 600,
+                      padding: '2px 8px',
+                      borderRadius: '6px',
+                    }}
+                  >
+                    All accounts cleared
+                  </span>
+                )}
+              </div>
+              <small style={{ color: 'var(--ink-soft)', fontSize: '11.5px' }}>
+                Only the Brand Owner can allow or decline workspace access.
+              </small>
+            </div>
+
+            {loadingPending ? (
+              <div style={{ padding: '18px', textAlign: 'center', color: 'var(--ink-soft)', fontSize: '13px' }}>
+                Checking for registration requests…
+              </div>
+            ) : pendingAccounts.length === 0 ? (
+              <div
+                style={{
+                  padding: '16px 20px',
+                  background: 'rgba(255, 255, 255, 0.6)',
+                  borderRadius: '8px',
+                  border: '1px dashed rgba(59, 36, 24, 0.15)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                }}
+              >
+                <ShieldCheck size={20} color="var(--clay)" />
+                <div>
+                  <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: 'var(--ink)' }}>
+                    No pending confirmation requests right now.
+                  </p>
+                  <p style={{ margin: 0, fontSize: '12px', color: 'var(--ink-soft)' }}>
+                    When a new reviewer or creator signs up with your brand code (<code>{brandMeta.brand_code || 'KLARITY-2026'}</code>), their request will appear right here for your instant Allow / Decline decision.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {pendingAccounts.map((acc) => (
+                  <div
+                    key={acc.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: '12px',
+                      padding: '12px 16px',
+                      background: '#fff',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(59, 36, 24, 0.12)',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div
+                        style={{
+                          width: '36px',
+                          height: '36px',
+                          borderRadius: '50%',
+                          background: 'rgba(169, 122, 50, 0.12)',
+                          color: 'var(--clay-deep)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 700,
+                          fontSize: '14px',
+                        }}
+                      >
+                        {acc.username.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <strong style={{ fontSize: '13.5px', color: 'var(--ink)' }}>{acc.username}</strong>
+                          <span
+                            style={{
+                              fontSize: '10.5px',
+                              padding: '2px 7px',
+                              borderRadius: '4px',
+                              background: acc.role === 'reviewer' ? 'rgba(41, 142, 228, 0.12)' : 'rgba(169, 122, 50, 0.12)',
+                              color: acc.role === 'reviewer' ? '#1d4ed8' : 'var(--clay-deep)',
+                              fontWeight: 600,
+                              textTransform: 'uppercase',
+                            }}
+                          >
+                            Requested Role: {acc.role === 'reviewer' ? 'Reviewer' : 'Team Member / Creator'}
+                          </span>
+                        </div>
+                        <span style={{ fontSize: '12px', color: 'var(--ink-soft)' }}>
+                          {acc.email} · Validated Brand Code · Awaiting Owner Confirmation
+                        </span>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        icon={UserCheck}
+                        disabled={verifyingId === acc.id}
+                        onClick={() => handleVerify(acc.id, true)}
+                        style={{ background: '#16a34a', borderColor: '#16a34a', color: '#fff' }}
+                      >
+                        {verifyingId === acc.id ? 'Processing…' : 'Allow / Verify'}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        icon={UserX}
+                        disabled={verifyingId === acc.id}
+                        onClick={() => handleVerify(acc.id, false)}
+                        style={{ color: '#dc2626' }}
+                      >
+                        Decline
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {isLead ? (
         <section className="metric-strip" aria-label="Workspace metrics">
